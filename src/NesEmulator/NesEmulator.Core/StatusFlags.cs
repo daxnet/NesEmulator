@@ -71,7 +71,11 @@ namespace NesEmulator.Core
             set => _flags = Bit.SetBit(_flags, 3, value);
         }
 
-        public byte Flags => _flags;
+        public byte Flags
+        {
+            get => _flags;
+            set => _flags = value;
+        }
 
         /// <summary>
         /// Gets or sets the Interrupt Disable (I) flag.
@@ -112,6 +116,11 @@ namespace NesEmulator.Core
 
         #region Public Methods
 
+        /// <summary>
+        /// Clears the status flags;
+        /// </summary>
+        public void Clear() => _flags = 0;
+
         /// <inheritdoc/>
         public override bool Equals(object? obj) => obj is StatusFlags flags &&
                    _flags == flags._flags;
@@ -123,6 +132,5 @@ namespace NesEmulator.Core
         public override string ToString() => Convert.ToString(_flags, 2);
 
         #endregion Public Methods
-
     }
 }

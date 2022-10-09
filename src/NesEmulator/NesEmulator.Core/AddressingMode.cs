@@ -9,7 +9,7 @@ namespace NesEmulator.Core
     /// <summary>
     /// Represents the CPU addressing modes.
     /// </summary>
-    public enum AddressingModes
+    public enum AddressingMode
     {
         Implicit,
         Accumulator,
@@ -22,7 +22,13 @@ namespace NesEmulator.Core
         AbsoluteX,
         AbsoluteY,
         Indirect,
+        /// <summary>
+        /// Indexed Indirect Mode (or Indirect.X)
+        /// </summary>
         IndexedIndirect,
+        /// <summary>
+        /// Indirect Indexed Mode (or Indirect.Y)
+        /// </summary>
         IndirectIndexed,
     }
 }

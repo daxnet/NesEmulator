@@ -16,5 +16,9 @@ namespace NesEmulator.Core
             _cpu = new Cpu(this);
             _memory = new Memory(this);
         }
+
+        public Cpu Cpu => _cpu;
+
+        public Memory Memory => _memory;
     }
 }

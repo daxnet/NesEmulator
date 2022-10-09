@@ -14,17 +14,22 @@ namespace NesEmulator.Core
 
         public Memory(Emulator emulator) : base(emulator) { }
 
-        public byte ReadByte(ushort pos) => _mem[pos];
+        public byte ReadByte(ushort offset) => _mem[offset];
 
-        public void WriteByte(ushort pos, byte value) => _mem[pos] = value;
+        public void WriteByte(ushort offset, byte value) => _mem[offset] = value;
 
-        public ushort ReadWord(ushort pos) => (ushort)(_mem[pos + 1] << 8 | _mem[pos]);
+        public ushort ReadWord(ushort offset) => (ushort)(_mem[offset + 1] << 8 | _mem[offset]);
 
-        public void WriteWord(ushort pos, ushort value)
+        public void WriteWord(ushort offset, ushort value)
         {
-            _mem[pos] = (byte)(value & 0xff);
-            _mem[pos + 1] = (byte)(value >> 8);
+            _mem[offset] = (byte)(value & 0xff);
+            _mem[offset + 1] = (byte)(value >> 8);
         }
+
+        public void CopyFrom(byte[] bytes) => Array.Copy(bytes, _mem, bytes.Length);
+
+        public void CopyFrom(byte[] bytes, int destIndex)
+            => Array.Copy(bytes, 0, _mem, destIndex, bytes.Length);
 
         public void Reset() => Array.Clear(_mem, 0, _mem.Length);
     }

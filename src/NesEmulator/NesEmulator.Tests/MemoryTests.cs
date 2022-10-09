@@ -58,6 +58,36 @@ namespace NesEmulator.Tests
             Assert.That(bytes[0x30], Is.EqualTo(0xfe));
         }
 
+        [Test]
+        public void CopyBytes1Test()
+        {
+            var bytes = new byte[] { 0xf1, 0xf2, 0xf3 };
+            memory.CopyFrom(bytes);
+            var memoryBytes = GetMemoryBytes(memory);
+            Assert.Multiple(() =>
+            {
+                Assert.That(memoryBytes[0], Is.EqualTo(0xf1));
+                Assert.That(memoryBytes[1], Is.EqualTo(0xf2));
+                Assert.That(memoryBytes[2], Is.EqualTo(0xf3));
+                Assert.That(memoryBytes[3], Is.EqualTo(0));
+            });
+        }
+
+        [Test]
+        public void CopyBytes2Test()
+        {
+            var bytes = new byte[] { 0xf1, 0xf2, 0xf3 };
+            memory.CopyFrom(bytes, 0x8000);
+            var memoryBytes = GetMemoryBytes(memory);
+            Assert.Multiple(() =>
+            {
+                Assert.That(memoryBytes[0x8000], Is.EqualTo(0xf1));
+                Assert.That(memoryBytes[0x8001], Is.EqualTo(0xf2));
+                Assert.That(memoryBytes[0x8002], Is.EqualTo(0xf3));
+                Assert.That(memoryBytes[0x8003], Is.EqualTo(0));
+            });
+        }
+
         private static byte[] GetMemoryBytes(Memory memory)
         {
             return (byte[])(typeof(Memory)
