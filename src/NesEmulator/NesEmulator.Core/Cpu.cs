@@ -133,6 +133,24 @@ namespace NesEmulator.Core
 
         internal ushort GetOperandAddress(AddressingMode mode)
         {
+            ushort GetIndexedIndirectAddress()
+            {
+                var ptr = (Emulator.Memory.ReadByte(_pc) + _x).WrapAsByte();
+                var lo = Emulator.Memory.ReadByte(ptr);
+                var hi = Emulator.Memory.ReadByte((ptr + 1).WrapAsUShort());
+                return (ushort)(hi << 8 | lo);
+            }
+
+            ushort GetIndirectIndexedAddress()
+            {
+                var baseAddress = Emulator.Memory.ReadByte(_pc);
+                var lo = Emulator.Memory.ReadByte(baseAddress);
+                var hi = Emulator.Memory.ReadByte((baseAddress + 1).WrapAsUShort());
+                var rebaseAddress = (ushort)(hi << 8 | lo);
+                return (rebaseAddress + _y).WrapAsUShort();
+            }
+
+
             return mode switch
             {
                 AddressingMode.Immediate => _pc,
@@ -142,7 +160,9 @@ namespace NesEmulator.Core
                 AddressingMode.Absolute => Emulator.Memory.ReadWord(_pc),
                 AddressingMode.AbsoluteX => (Emulator.Memory.ReadWord(_pc) + _x).WrapAsUShort(),
                 AddressingMode.AbsoluteY => (Emulator.Memory.ReadWord(_pc) + _y).WrapAsUShort(),
-                _ => throw new Exception()
+                AddressingMode.IndexedIndirect => GetIndexedIndirectAddress(),
+                AddressingMode.IndirectIndexed => GetIndirectIndexedAddress(),
+                _ => throw new NotSupportedException($"{mode} is not supported.")
             };
         }
 

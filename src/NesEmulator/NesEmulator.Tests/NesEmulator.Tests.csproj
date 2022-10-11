@@ -20,4 +20,8 @@
     <ProjectReference Include="..\NesEmulator.Core\NesEmulator.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="OpCodeTests\" />
+  </ItemGroup>
+
 </Project>
