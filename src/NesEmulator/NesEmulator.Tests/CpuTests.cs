@@ -14,7 +14,7 @@ namespace NesEmulator.Tests
         {
             var emulator = new Emulator();
             emulator.Cpu.StatusFlags.C = 1;
-            Assert.That(emulator.Cpu.StatusFlags.Flags, Is.EqualTo(1));
+            Assert.That(emulator.Cpu.StatusFlags.Flags, Is.EqualTo(0b00110101));
         }
     }
 }

@@ -9,7 +9,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.Implicit, 0x58, 1, 2)]
     internal sealed class CLI : OpCode
     {
-        protected override void DoExecute(Cpu cpu, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.StatusFlags.I = 0;
         }

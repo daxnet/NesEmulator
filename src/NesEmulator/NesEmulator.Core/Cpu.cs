@@ -9,7 +9,7 @@ namespace NesEmulator.Core
         #region Private Fields
 
         private const byte StackResetValue = 0xfd;
-        private const byte StatusFlagResetValue = 0x34;
+        private const byte StatusFlagResetValue = 0x34; // 0b0011_0100
 
         private readonly OpCodeDefinitionAttribute[] _opCodeDefinitions = new OpCodeDefinitionAttribute[0x100];
         private readonly OpCode?[] _opCodes = new OpCode?[0x100];
@@ -79,10 +79,11 @@ namespace NesEmulator.Core
 
         #region Public Methods
 
-        public void LoadAndRun(byte[] program)
+        public void LoadAndRun(byte[] program, Action<Emulator>? stateSetter = null)
         {
             Load(program);
             Reset();
+            stateSetter?.Invoke(Emulator);
             Run();
         }
 
@@ -93,7 +94,7 @@ namespace NesEmulator.Core
             _y = 0;
             _sp = StackResetValue;
             _statusFlags.Flags = StatusFlagResetValue;
-            _pc = Emulator.Memory.ReadWord(0xfffc);
+            _pc = Emulator.Memory?.ReadWord(0xfffc) ?? 0;
         }
 
         #endregion Public Methods
@@ -124,7 +125,7 @@ namespace NesEmulator.Core
             {
                 _pc++;
                 var opCodeImpl = _opCodes[inst];
-                opCodeImpl?.Execute(inst, this);
+                opCodeImpl?.Execute(inst, this, Emulator.Memory);
                 inst = Emulator.Memory.ReadByte(_pc);
             }
         }

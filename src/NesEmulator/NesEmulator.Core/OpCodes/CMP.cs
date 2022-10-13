@@ -16,7 +16,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.IndirectIndexed, 0xd1, 2, 5)]
     internal sealed class CMP : OpCode
     {
-        protected override void DoExecute(Cpu cpu, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             throw new NotImplementedException();
         }

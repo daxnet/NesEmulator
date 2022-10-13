@@ -8,14 +8,14 @@ namespace NesEmulator.Core.OpCodes
 {
     public abstract class OpCode
     {
-        public void Execute(byte opcode, Cpu cpu)
+        public void Execute(byte opcode, Cpu cpu, Memory memory)
         {
             var opCodeDefinition = cpu.GetOpCodeDefinition(opcode);
-            DoExecute(cpu, opCodeDefinition);
+            DoExecute(cpu, memory, opCodeDefinition);
             IncreaseProgramCounter(cpu, opCodeDefinition);
         }
 
-        protected abstract void DoExecute(Cpu cpu, OpCodeDefinitionAttribute opCodeDefinition);
+        protected abstract void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition);
 
         protected virtual void IncreaseProgramCounter(Cpu cpu, OpCodeDefinitionAttribute opCodeDefinition) => cpu.PC += (ushort)(opCodeDefinition.Bytes - 1);
 

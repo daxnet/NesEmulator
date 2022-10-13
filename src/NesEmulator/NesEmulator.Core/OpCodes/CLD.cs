@@ -9,7 +9,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.Implicit, 0xd8, 1, 2)]
     internal sealed class CLD : OpCode
     {
-        protected override void DoExecute(Cpu cpu, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.StatusFlags.D = 0;
         }
