@@ -65,9 +65,76 @@ namespace NesEmulator.Tests.OpCodeTests
         [Test]
         public void AbsoluteAddressingTest()
         {
+            // LDA #$77
+            // STA $8110
+            // LDA $8110
             TestUtils.SetMemoryByte(emulator.Memory, 0x8110, 0x77);
             var program = new byte[] { 0xad, 0x10, 0x81 };
             emulator.Cpu.LoadAndRun(program);
+            Assert.That(emulator.Cpu.A, Is.EqualTo(0x77));
+        }
+
+        [Test]
+        public void AbsoluteXAddressingTest()
+        {
+            // LDA #$77
+            // STA $8110
+            // LDX #$2
+            // LDA $810e,X
+            TestUtils.SetMemoryByte(emulator.Memory, 0x8110, 0x77);
+            var program = new byte[] { 0xbd, 0x0e, 0x81 };
+            emulator.Cpu.LoadAndRun(program, e => e.Cpu.X = 0x02);
+            Assert.That(emulator.Cpu.A, Is.EqualTo(0x77));
+        }
+
+        [Test]
+        public void AbsoluteYAddressingTest()
+        {
+            // LDA #$77
+            // STA $8110
+            // LDY #$2
+            // LDA $810e,Y
+            TestUtils.SetMemoryByte(emulator.Memory, 0x8110, 0x77);
+            var program = new byte[] { 0xb9, 0x0e, 0x81 };
+            emulator.Cpu.LoadAndRun(program, e => e.Cpu.Y = 0x02);
+            Assert.That(emulator.Cpu.A, Is.EqualTo(0x77));
+        }
+
+        [Test]
+        public void IndexedIndirectAddressingTest()
+        {
+            // LDA #$77
+            // STA $8110
+            // LDA #$10
+            // STA $05
+            // LDA #$81
+            // STA $06
+            // LDX #$2
+            // LDA ($3,X)
+            TestUtils.SetMemoryByte(emulator.Memory, 0x05, 0x10);
+            TestUtils.SetMemoryByte(emulator.Memory, 0x06, 0x81);
+            TestUtils.SetMemoryByte(emulator.Memory, 0x8110, 0x77);
+            var program = new byte[] { 0xa1, 0x03 };
+            emulator.Cpu.LoadAndRun(program, e => e.Cpu.X = 0x02);
+            Assert.That(emulator.Cpu.A, Is.EqualTo(0x77));
+        }
+
+        [Test]
+        public void IndirectIndexedAddressingTest()
+        {
+            // LDA #$77
+            // STA $8110
+            // LDA #$0E
+            // STA $05
+            // LDA #$81
+            // STA $06
+            // LDY #$2
+            // LDA ($5),Y
+            TestUtils.SetMemoryByte(emulator.Memory, 0x8110, 0x77);
+            TestUtils.SetMemoryByte(emulator.Memory, 0x05, 0x0e);
+            TestUtils.SetMemoryByte(emulator.Memory, 0x06, 0x81);
+            var program = new byte[] { 0xb1, 0x05 };
+            emulator.Cpu.LoadAndRun(program, e => e.Cpu.Y = 0x02);
             Assert.That(emulator.Cpu.A, Is.EqualTo(0x77));
         }
     }

@@ -12,6 +12,10 @@ namespace NesEmulator.Core
     public enum AddressingMode
     {
         Implicit,
+        /// <summary>
+        /// The operation is performed on the accumulator
+        /// rather than on the memory block.
+        /// </summary>
         Accumulator,
         Immediate,
         ZeroPage,

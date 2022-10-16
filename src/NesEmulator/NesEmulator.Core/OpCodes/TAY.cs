@@ -11,15 +11,7 @@ namespace NesEmulator.Core.OpCodes
     {
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            cpu.Y = cpu.A;
-            if (cpu.Y == 0)
-            {
-                cpu.StatusFlags.Z = true;
-            }
-            if ((cpu.Y & 0x80) != 0)
-            {
-                cpu.StatusFlags.N = true;
-            }
+            cpu.SetRegister(RegisterNames.Y, cpu.A);
         }
     }
 }

@@ -103,35 +103,13 @@ namespace NesEmulator.Core
 
         internal OpCodeDefinitionAttribute GetOpCodeDefinition(byte opcode) => _opCodeDefinitions[opcode];
 
-        #endregion Internal Methods
-
-        #region Private Methods
-
         /// <summary>
-        /// Loads the program to be executed.
+        /// Computes the operand address based on the given addressing mode.
         /// </summary>
-        /// <param name="program">The byte array that holds the program to be executed.</param>
-        private void Load(byte[] program)
-        {
-            if (program == null || program.Length == 0)
-                throw new ArgumentNullException(nameof(program));
-            Emulator.Memory.CopyFrom(program, 0x8000);
-            Emulator.Memory.WriteWord(0xfffc, 0x8000);
-        }
-        private void Run()
-        {
-            var inst = Emulator.Memory.ReadByte(_pc);
-            while (inst != 0)
-            {
-                _pc++;
-                var opCodeImpl = _opCodes[inst];
-                opCodeImpl?.Execute(inst, this, Emulator.Memory);
-                inst = Emulator.Memory.ReadByte(_pc);
-            }
-        }
-
-        #endregion Private Methods
-
+        /// <param name="mode">The memory addressing mode.</param>
+        /// <returns>The operand address.</returns>
+        /// <exception cref="NotSupportedException">Throws when the addressing 
+        /// mode is not supported</exception>
         internal ushort GetOperandAddress(AddressingMode mode)
         {
             ushort GetIndexedIndirectAddress()
@@ -167,6 +145,88 @@ namespace NesEmulator.Core
             };
         }
 
+        internal void SetRegister(RegisterNames register, byte val, bool updateFlags = true)
+        {
+            switch(register)
+            {
+                case RegisterNames.A:
+                    A = val;
+                    break;
+                case RegisterNames.X:
+                    X = val;
+                    break;
+                case RegisterNames.Y:
+                    Y = val;
+                    break;
+            }
+
+            if (updateFlags)
+            {
+                if (val == 0)
+                {
+                    StatusFlags.Z = true;
+                }
+                if ((val & 0x80) != 0)
+                {
+                    StatusFlags.N = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a byte value to the accumulator and sets the
+        /// status flags properly.
+        /// </summary>
+        /// <param name="val">The value to be added to the accumulator.</param>
+        internal void AddToRegisterA(byte val)
+        {
+            // firstly add the given value to the value in the
+            // accumulator and take the carry flag into account.
+            var sum = A + val + StatusFlags.C;
+
+            // The carry flag is set if the sum value is greater
+            // than a byte's max value.
+            StatusFlags.C = sum > byte.MaxValue;
+
+            // Sets the overflow flag. When the value being added
+            // to the accumulator has the different sign than the result,
+            // AND the value in the accumulator also has a different sign
+            // than the result, the overflow flag should be set.
+            var result = (byte)sum;
+            StatusFlags.V = ((val ^ result) & (A ^ result) & 0x80) != 0;
+
+            // Sets the value to the register A.
+            SetRegister(RegisterNames.A, result);
+        }
+
+        #endregion Internal Methods
+
+        #region Private Methods
+
+        /// <summary>
+        /// Loads the program to be executed.
+        /// </summary>
+        /// <param name="program">The byte array that holds the program to be executed.</param>
+        private void Load(byte[] program)
+        {
+            if (program == null || program.Length == 0)
+                throw new ArgumentNullException(nameof(program));
+            Emulator.Memory.CopyFrom(program, 0x8000);
+            Emulator.Memory.WriteWord(0xfffc, 0x8000);
+        }
+        private void Run()
+        {
+            var inst = Emulator.Memory.ReadByte(_pc);
+            while (inst != 0)
+            {
+                _pc++;
+                var opCodeImpl = _opCodes[inst];
+                opCodeImpl?.Execute(inst, this, Emulator.Memory);
+                inst = Emulator.Memory.ReadByte(_pc);
+            }
+        }
+
+        #endregion Private Methods
 
     }
 }

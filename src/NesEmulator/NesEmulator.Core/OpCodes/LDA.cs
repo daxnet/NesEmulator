@@ -20,15 +20,7 @@ namespace NesEmulator.Core.OpCodes
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             var byteVal = memory.ReadByte(address);
-            cpu.A = byteVal;
-            if (byteVal == 0)
-            {
-                cpu.StatusFlags.Z = true;
-            }
-            if ((byteVal & 0x80) != 0)
-            {
-                cpu.StatusFlags.N = true;
-            }
+            cpu.SetRegister(RegisterNames.A, byteVal);
         }
     }
 }
