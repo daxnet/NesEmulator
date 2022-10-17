@@ -145,7 +145,7 @@ namespace NesEmulator.Core
             };
         }
 
-        internal void SetRegister(RegisterNames register, byte val, bool updateFlags = true)
+        internal void SetRegister(RegisterNames register, byte val, bool updateZandNFlags = true)
         {
             switch(register)
             {
@@ -160,16 +160,21 @@ namespace NesEmulator.Core
                     break;
             }
 
-            if (updateFlags)
+            if (updateZandNFlags)
             {
-                if (val == 0)
-                {
-                    StatusFlags.Z = true;
-                }
-                if ((val & 0x80) != 0)
-                {
-                    StatusFlags.N = true;
-                }
+                UpdateZeroAndNegativeFlags(val);
+            }
+        }
+
+        internal void UpdateZeroAndNegativeFlags(byte val)
+        {
+            if (val == 0)
+            {
+                StatusFlags.Z = true;
+            }
+            if ((val & 0x80) != 0)
+            {
+                StatusFlags.N = true;
             }
         }
 
