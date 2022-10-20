@@ -18,7 +18,21 @@ namespace NesEmulator.Core.OpCodes
     {
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            throw new NotImplementedException();
+            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
+            var val = memory.ReadByte(address);
+            var result = cpu.A - val;
+            if (result >= 0)
+            {
+                cpu.StatusFlags.C = true;
+                if (result == 0)
+                {
+                    cpu.StatusFlags.Z = true;
+                }
+            }
+            else
+            {
+                cpu.StatusFlags.N = true;
+            }
         }
     }
 }

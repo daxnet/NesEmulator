@@ -101,6 +101,34 @@ namespace NesEmulator.Core
 
         #region Internal Methods
 
+        /// <summary>
+        /// Adds a byte value to the accumulator and sets the
+        /// status flags properly.
+        /// </summary>
+        /// <param name="val">The value to be added to the accumulator.</param>
+        internal void AddToRegisterA(byte val)
+        {
+            // firstly add the given value to the value in the
+            // accumulator and take the carry flag into account.
+            var sum = A + val + StatusFlags.C;
+
+            // The carry flag is set if the sum value is greater
+            // than a byte's max value.
+            StatusFlags.C = sum > byte.MaxValue;
+
+            // Sets the overflow flag. When the value being added
+            // to the accumulator has the different sign than the result,
+            // AND the value in the accumulator also has a different sign
+            // than the result, the overflow flag should be set.
+            var result = (byte)sum;
+            StatusFlags.V = ((val ^ result) & (A ^ result) & 0x80) != 0;
+
+            // Sets the value to the register A.
+            SetRegister(RegisterNames.A, result);
+        }
+
+        internal void Branch() => _pc = (_pc + (sbyte)Emulator.Memory.ReadByte(_pc) + 1).WrapAsUShort();
+
         internal OpCodeDefinitionAttribute GetOpCodeDefinition(byte opcode) => _opCodeDefinitions[opcode];
 
         /// <summary>
@@ -145,6 +173,29 @@ namespace NesEmulator.Core
             };
         }
 
+        internal byte PopByte()
+        {
+            _sp++;
+            return Emulator.Memory.ReadByte((ushort)(0x100 + _sp));
+        }
+
+        internal ushort PopWord()
+        {
+            var lo = PopByte();
+            var hi = PopByte();
+            return (ushort)(hi << 8 | lo);
+        }
+
+        internal void PushByte(byte val)
+        {
+            Emulator.Memory.WriteByte((ushort)(0x100 + _sp), val);
+            _sp--;
+        }
+        internal void PushWord(ushort val)
+        {
+            PushByte((byte)(val >> 8)); // hi
+            PushByte((byte)(val & 0xff)); // lo
+        }
         internal void SetRegister(RegisterNames register, byte val, bool updateZandNFlags = true)
         {
             switch(register)
@@ -176,32 +227,6 @@ namespace NesEmulator.Core
             {
                 StatusFlags.N = true;
             }
-        }
-
-        /// <summary>
-        /// Adds a byte value to the accumulator and sets the
-        /// status flags properly.
-        /// </summary>
-        /// <param name="val">The value to be added to the accumulator.</param>
-        internal void AddToRegisterA(byte val)
-        {
-            // firstly add the given value to the value in the
-            // accumulator and take the carry flag into account.
-            var sum = A + val + StatusFlags.C;
-
-            // The carry flag is set if the sum value is greater
-            // than a byte's max value.
-            StatusFlags.C = sum > byte.MaxValue;
-
-            // Sets the overflow flag. When the value being added
-            // to the accumulator has the different sign than the result,
-            // AND the value in the accumulator also has a different sign
-            // than the result, the overflow flag should be set.
-            var result = (byte)sum;
-            StatusFlags.V = ((val ^ result) & (A ^ result) & 0x80) != 0;
-
-            // Sets the value to the register A.
-            SetRegister(RegisterNames.A, result);
         }
 
         #endregion Internal Methods

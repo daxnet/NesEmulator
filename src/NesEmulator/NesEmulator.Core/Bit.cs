@@ -69,6 +69,14 @@ namespace NesEmulator.Core
         /// <returns>A byte with the specified position being cleared.</returns>
         public static byte Clear(byte src, int bitPos) => (byte)(src & ~(1 << bitPos));
 
+        /// <summary>
+        /// Gets a bit from the given byte.
+        /// </summary>
+        /// <param name="src">The byte.</param>
+        /// <param name="bitPos">The position of the bit to return.</param>
+        /// <returns>The bit value.</returns>
+        public static Bit GetBit(byte src, int bitPos) => (src >> bitPos) & 1;
+
         public static implicit operator Bit(int value) => new(value);
 
         public static implicit operator Bit(bool value) => new(value);

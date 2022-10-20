@@ -241,5 +241,37 @@ namespace NesEmulator.Tests
             byte dest = Bit.SetBit(src, 3, 0);
             Assert.That(dest, Is.EqualTo(0b0110_0000));
         }
+
+        [Test]
+        public void GetBit1Test()
+        {
+            byte src = 0b0100_1010;
+            var bit = Bit.GetBit(src, 6);
+            Assert.That(bit, Is.EqualTo((Bit)1));
+        }
+
+        [Test]
+        public void GetBit2Test()
+        {
+            byte src = 0b0100_1010;
+            var bit = Bit.GetBit(src, 1);
+            Assert.That(bit, Is.EqualTo((Bit)1));
+        }
+
+        [Test]
+        public void GetBit3Test()
+        {
+            byte src = 0b0100_1010;
+            var bit = Bit.GetBit(src, 2);
+            Assert.That(bit, Is.EqualTo((Bit)0));
+        }
+
+        [Test]
+        public void GetBit4Test()
+        {
+            byte src = 0b0100_1010;
+            var bit = Bit.GetBit(src, 7);
+            Assert.That(bit, Is.EqualTo((Bit)0));
+        }
     }
 }
