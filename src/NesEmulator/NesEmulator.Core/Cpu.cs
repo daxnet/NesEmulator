@@ -6,10 +6,17 @@ namespace NesEmulator.Core
     public sealed class Cpu : NesComponent
     {
 
-        #region Private Fields
+        #region Public Fields
 
-        private const byte StackResetValue = 0xfd;
-        private const byte StatusFlagResetValue = 0x34; // 0b0011_0100
+        public const ushort StackPageOffset = 0x100;
+        public const byte StackResetValue = 0xfd;
+        public const byte StatusFlagResetValue = 0x34;
+
+        #endregion Public Fields
+
+        // 0b0011_0100
+
+        #region Private Fields
 
         private readonly OpCodeDefinitionAttribute[] _opCodeDefinitions = new OpCodeDefinitionAttribute[0x100];
         private readonly OpCode?[] _opCodes = new OpCode?[0x100];
@@ -176,7 +183,7 @@ namespace NesEmulator.Core
         internal byte PopByte()
         {
             _sp++;
-            return Emulator.Memory.ReadByte((ushort)(0x100 + _sp));
+            return Emulator.Memory.ReadByte((ushort)(StackPageOffset + _sp));
         }
 
         internal ushort PopWord()
@@ -188,7 +195,7 @@ namespace NesEmulator.Core
 
         internal void PushByte(byte val)
         {
-            Emulator.Memory.WriteByte((ushort)(0x100 + _sp), val);
+            Emulator.Memory.WriteByte((ushort)(StackPageOffset + _sp), val);
             _sp--;
         }
         internal void PushWord(ushort val)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NesEmulator.Tests.OpCodeTests
 {
-    internal class BRKTests
+    internal class CMPTests
     {
     }
 }
