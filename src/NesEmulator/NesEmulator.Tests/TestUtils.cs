@@ -24,5 +24,11 @@ namespace NesEmulator.Tests
                 .GetField("_mem", BindingFlags.NonPublic | BindingFlags.Instance)
                 ?.SetValue(memory, bytes);
         }
+
+        public static byte GetMemoryByte(Memory memory, ushort offset)
+        {
+            var bytes = GetMemoryBytes(memory);
+            return bytes[offset];
+        }
     }
 }

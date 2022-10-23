@@ -1,8 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// ============================================================================
+//       __ __   __
+//  |\ ||_ (_   |_  _    | _ |_ _  _
+//  | \||____)  |__||||_||(_||_(_)|
+//
+// Written by Sunny Chen (daxnet), 2022
+// MIT License
+// ============================================================================
 
 namespace NesEmulator.Core
 {
@@ -11,6 +14,7 @@ namespace NesEmulator.Core
     /// </summary>
     public abstract class NesComponent
     {
+
         #region Private Fields
 
         private readonly Emulator _emulator;
@@ -35,5 +39,6 @@ namespace NesEmulator.Core
         protected Emulator Emulator => _emulator;
 
         #endregion Protected Properties
+
     }
 }

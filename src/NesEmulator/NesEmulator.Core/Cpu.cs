@@ -1,5 +1,6 @@
 ﻿using NesEmulator.Core.OpCodes;
 using System.Reflection;
+using System.Text;
 
 namespace NesEmulator.Core
 {
@@ -10,11 +11,9 @@ namespace NesEmulator.Core
 
         public const ushort StackPageOffset = 0x100;
         public const byte StackResetValue = 0xfd;
-        public const byte StatusFlagResetValue = 0x34;
+        public const byte StatusFlagResetValue = 0x34; // 0b0011_0100
 
         #endregion Public Fields
-
-        // 0b0011_0100
 
         #region Private Fields
 
@@ -94,6 +93,30 @@ namespace NesEmulator.Core
             Run();
         }
 
+        public string Disassemble(byte[] program)
+        {
+            var sb = new StringBuilder();
+            var indexer = 0;
+            while (indexer < program.Length)
+            {
+                var opcode = program[indexer];
+                indexer++;
+                var opCodeDefinition = _opCodeDefinitions[opcode];
+                var operandLength = opCodeDefinition.Bytes - 1;
+                var opCodeImpl = _opCodes[opcode];
+                var operand = new byte[operandLength];
+                Array.Copy(program, indexer, operand, 0, operandLength);
+                if (opCodeImpl != null)
+                {
+                    sb.AppendLine(opCodeImpl.Disassemble(opcode, operand, this));
+                }
+
+                indexer += operandLength;
+            }
+
+            return sb.ToString();
+        }
+
         public void Reset()
         {
             _a = 0;
@@ -164,6 +187,12 @@ namespace NesEmulator.Core
                 return (rebaseAddress + _y).WrapAsUShort();
             }
 
+            ushort GetIndirectAddress()
+            {
+                var offset = Emulator.Memory.ReadWord(_pc);
+                var hiAddress = (ushort)((offset & 0xff) == 0xff ? offset - 0xff : offset + 1);
+                return (Emulator.Memory.ReadByte(hiAddress) << 8 | Emulator.Memory.ReadByte(offset)).WrapAsUShort();
+            }
 
             return mode switch
             {
@@ -174,6 +203,7 @@ namespace NesEmulator.Core
                 AddressingMode.Absolute => Emulator.Memory.ReadWord(_pc),
                 AddressingMode.AbsoluteX => (Emulator.Memory.ReadWord(_pc) + _x).WrapAsUShort(),
                 AddressingMode.AbsoluteY => (Emulator.Memory.ReadWord(_pc) + _y).WrapAsUShort(),
+                AddressingMode.Indirect => GetIndirectAddress(),
                 AddressingMode.IndexedIndirect => GetIndexedIndirectAddress(),
                 AddressingMode.IndirectIndexed => GetIndirectIndexedAddress(),
                 _ => throw new NotSupportedException($"{mode} is not supported.")

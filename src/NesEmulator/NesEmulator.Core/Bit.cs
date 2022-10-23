@@ -12,6 +12,13 @@ namespace NesEmulator.Core
     public struct Bit
     {
 
+        #region Public Fields
+
+        public static readonly Bit BitSet = new(1);
+        public static readonly Bit BitClear = new(0);
+
+        #endregion Public Fields
+
         #region Private Fields
 
         private readonly int _value;
@@ -68,7 +75,6 @@ namespace NesEmulator.Core
         /// <param name="bitPos">The position in the byte to be cleared.</param>
         /// <returns>A byte with the specified position being cleared.</returns>
         public static byte Clear(byte src, int bitPos) => (byte)(src & ~(1 << bitPos));
-
         /// <summary>
         /// Gets a bit from the given byte.
         /// </summary>
@@ -76,6 +82,14 @@ namespace NesEmulator.Core
         /// <param name="bitPos">The position of the bit to return.</param>
         /// <returns>The bit value.</returns>
         public static Bit GetBit(byte src, int bitPos) => (src >> bitPos) & 1;
+
+        /// <summary>
+        /// Checks whether the bit of the given byte has been set.
+        /// </summary>
+        /// <param name="src">The byte to check.</param>
+        /// <param name="bitPos">The position of the bit.</param>
+        /// <returns>True if the bit has been set, otherwise, false.</returns>
+        public static bool HasSet(byte src, int bitPos) => GetBit(src, bitPos) != 0;
 
         public static implicit operator Bit(int value) => new(value);
 

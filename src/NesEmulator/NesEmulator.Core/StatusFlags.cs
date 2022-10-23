@@ -1,8 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// ============================================================================
+//       __ __   __
+//  |\ ||_ (_   |_  _    | _ |_ _  _
+//  | \||____)  |__||||_||(_||_(_)|
+//
+// Written by Sunny Chen (daxnet), 2022
+// MIT License
+// ============================================================================
 
 namespace NesEmulator.Core
 {
@@ -11,7 +14,6 @@ namespace NesEmulator.Core
     /// </summary>
     public struct StatusFlags
     {
-
         #region Private Fields
 
         private byte _flags;
@@ -103,6 +105,7 @@ namespace NesEmulator.Core
             get => (_flags & 0x40) >> 6;
             set => _flags = Bit.SetBit(_flags, 6, value);
         }
+
         /// <summary>
         /// Gets or sets the Zero (Z) flag.
         /// </summary>
@@ -115,6 +118,18 @@ namespace NesEmulator.Core
         #endregion Public Properties
 
         #region Public Methods
+
+        /// <inheritdoc/>
+        public static bool operator !=(StatusFlags left, StatusFlags right)
+        {
+            return !(left == right);
+        }
+
+        /// <inheritdoc/>
+        public static bool operator ==(StatusFlags left, StatusFlags right)
+        {
+            return left.Equals(right);
+        }
 
         /// <summary>
         /// Clears the status flags;

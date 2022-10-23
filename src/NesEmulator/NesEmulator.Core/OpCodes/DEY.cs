@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace NesEmulator.Core.OpCodes
 {
-    [OpCodeDefinition(AddressingMode.Implicit, 0x38, 1, 2)]
-    internal sealed class SEC : OpCode
+    [OpCodeDefinition(AddressingMode.Implicit, 0x88, 1, 2)]
+    internal sealed class DEY : OpCode
     {
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
-            => cpu.StatusFlags.C = true;
+            => cpu.SetRegister(RegisterNames.Y, (byte)(cpu.Y - 1));
     }
 }

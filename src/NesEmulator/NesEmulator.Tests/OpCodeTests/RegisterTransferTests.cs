@@ -132,5 +132,32 @@ namespace NesEmulator.Tests.OpCodeTests
                 Assert.That(emulator.Cpu.StatusFlags.Z, Is.EqualTo((Bit)true));
             });
         }
+
+        [Test]
+        public void STATest()
+        {
+            var program = new byte[] { 0x85, 0x02 };
+            emulator.Cpu.LoadAndRun(program, e => { e.Cpu.A = 0x99; });
+            var b = TestUtils.GetMemoryByte(emulator.Memory, 0x02);
+            Assert.That(b, Is.EqualTo(0x99));
+        }
+
+        [Test]
+        public void STXTest()
+        {
+            var program = new byte[] { 0x86, 0x02 };
+            emulator.Cpu.LoadAndRun(program, e => { e.Cpu.X = 0x99; });
+            var b = TestUtils.GetMemoryByte(emulator.Memory, 0x02);
+            Assert.That(b, Is.EqualTo(0x99));
+        }
+
+        [Test]
+        public void STYTest()
+        {
+            var program = new byte[] { 0x84, 0x02 };
+            emulator.Cpu.LoadAndRun(program, e => { e.Cpu.Y = 0x99; });
+            var b = TestUtils.GetMemoryByte(emulator.Memory, 0x02);
+            Assert.That(b, Is.EqualTo(0x99));
+        }
     }
 }
