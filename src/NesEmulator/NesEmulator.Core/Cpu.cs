@@ -40,6 +40,10 @@ namespace NesEmulator.Core
             {
                 foreach (var opCodeDef in item.OpCodeDefs)
                 {
+                    if (_opCodes[opCodeDef.OpCode] != null)
+                    {
+                        throw new Exception("The OpCode has already been loaded.");
+                    }
                     _opCodeDefinitions[opCodeDef.OpCode] = opCodeDef;
                     _opCodes[opCodeDef.OpCode] = (OpCode?)Activator.CreateInstance(item.OpCodeImplType);
                 }

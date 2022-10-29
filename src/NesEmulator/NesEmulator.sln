@@ -3,9 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32811.315
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesEmulator.Core", "NesEmulator.Core\NesEmulator.Core.csproj", "{3CACC93D-13C3-4CF8-92CC-9B29C4925146}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesEmulator.Core", "NesEmulator.Core\NesEmulator.Core.csproj", "{3CACC93D-13C3-4CF8-92CC-9B29C4925146}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesEmulator.Tests", "NesEmulator.Tests\NesEmulator.Tests.csproj", "{77A2CC46-D660-4C4A-A106-44EFBAA80B81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesEmulator.Tests", "NesEmulator.Tests\NesEmulator.Tests.csproj", "{77A2CC46-D660-4C4A-A106-44EFBAA80B81}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{F20F24DD-44E2-483D-AE60-B37457D77165}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesEmulator.NesDasm", "..\Tools\NesEmulator.NesDasm\NesEmulator.NesDasm.csproj", "{515DE69B-5A38-4027-B7CE-832646D87DD1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +25,16 @@ Global
 		{77A2CC46-D660-4C4A-A106-44EFBAA80B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77A2CC46-D660-4C4A-A106-44EFBAA80B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77A2CC46-D660-4C4A-A106-44EFBAA80B81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{515DE69B-5A38-4027-B7CE-832646D87DD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{515DE69B-5A38-4027-B7CE-832646D87DD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{515DE69B-5A38-4027-B7CE-832646D87DD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{515DE69B-5A38-4027-B7CE-832646D87DD1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{515DE69B-5A38-4027-B7CE-832646D87DD1} = {F20F24DD-44E2-483D-AE60-B37457D77165}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B470692D-50FE-44A4-BDAC-567DAE2CDBE0}

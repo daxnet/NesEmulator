@@ -20,4 +20,13 @@
     <ProjectReference Include="..\NesEmulator.Core\NesEmulator.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="bm.nes">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="invalid.nes">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
