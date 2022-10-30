@@ -44,28 +44,11 @@ namespace NesEmulator.Core.OpCodes
         #endregion Protected Methods
     }
 
-    [OpCodeDefinition(AddressingMode.ZeroPage, 0x87, 2, 3, true)]
-    [OpCodeDefinition(AddressingMode.ZeroPageY, 0x97, 2, 4, true)]
-    [OpCodeDefinition(AddressingMode.IndexedIndirect, 0x83, 2, 6, true)]
-    [OpCodeDefinition(AddressingMode.Absolute, 0x8f, 3, 4, true)]
-    internal sealed class SAX : OpCode
-    {
-        #region Protected Methods
-
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
-        {
-            var result = (byte)(cpu.A & cpu.X);
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
-            memory.WriteByte(address, result);
-            cpu.UpdateZeroAndNegativeFlags(result);
-        }
-
-        #endregion Protected Methods
-    }
-
     [OpCodeDefinition(AddressingMode.Immediate, 0x4b, 2, 2, true)]
     internal sealed class ASR : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
@@ -74,11 +57,15 @@ namespace NesEmulator.Core.OpCodes
             cpu.StatusFlags.C = Bit.HasSet(cpu.A, 0);
             cpu.SetRegister(RegisterNames.A, (byte)(cpu.A >> 1));
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.Immediate, 0xab, 2, 2, true)]
     internal sealed class ATX : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
@@ -86,23 +73,31 @@ namespace NesEmulator.Core.OpCodes
             cpu.SetRegister(RegisterNames.A, (byte)(cpu.A & byteVal));
             cpu.SetRegister(RegisterNames.X, cpu.A);
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.AbsoluteY, 0x9f, 3, 5, true)]
     [OpCodeDefinition(AddressingMode.IndirectIndexed, 0x93, 2, 6, true)]
     internal sealed class AXA : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             var val = cpu.X & cpu.A & 7;
             memory.WriteByte(address, (byte)val);
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.Immediate, 0xcb, 2, 2, true)]
     internal sealed class AXS : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
@@ -114,6 +109,8 @@ namespace NesEmulator.Core.OpCodes
             }
             cpu.SetRegister(RegisterNames.X, (byte)(cpu.X - byteVal));
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.ZeroPage, 0xc7, 2, 5, true)]
@@ -125,6 +122,8 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.IndirectIndexed, 0xd3, 2, 8, true)]
     internal sealed class DCP : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
@@ -145,6 +144,8 @@ namespace NesEmulator.Core.OpCodes
                 cpu.StatusFlags.N = true;
             }
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.ZeroPage, 0x4, 2, 3, true)]
@@ -163,7 +164,12 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.ZeroPageX, 0xf4, 2, 4, true)]
     internal sealed class DOP : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition) { }
+        #region Protected Methods
+
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        { }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.ZeroPage, 0xe7, 2, 5, true)]
@@ -175,6 +181,8 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.IndirectIndexed, 0xf3, 2, 8, true)]
     internal sealed class ISC : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             // INC
@@ -186,6 +194,8 @@ namespace NesEmulator.Core.OpCodes
             // SBC
             cpu.AddToRegisterA((byte)~b);
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.Implicit, 0x2, 1, 0, true)]
@@ -202,17 +212,24 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.Implicit, 0xf2, 1, 0, true)]
     internal sealed class KIL : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition) { }
+        #region Protected Methods
+
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        { }
 
         protected override void IncreaseProgramCounter(Cpu cpu, OpCodeDefinitionAttribute opCodeDefinition)
         {
             // Stop program counter
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.AbsoluteY, 0xbb, 3, 4, true)]
     internal sealed class LAR : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
@@ -221,6 +238,8 @@ namespace NesEmulator.Core.OpCodes
             cpu.SetRegister(RegisterNames.A, cpu.SP);
             cpu.SetRegister(RegisterNames.X, cpu.SP);
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.ZeroPage, 0xa7, 2, 3, true)]
@@ -231,6 +250,8 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.IndirectIndexed, 0xb3, 2, 5, true)]
     internal sealed class LAX : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             // LDA
@@ -241,6 +262,8 @@ namespace NesEmulator.Core.OpCodes
             // TAX
             cpu.SetRegister(RegisterNames.X, cpu.A);
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.ZeroPage, 0x27, 2, 5, true)]
@@ -252,6 +275,8 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.IndirectIndexed, 0x33, 2, 8, true)]
     internal sealed class RLA : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
@@ -262,6 +287,8 @@ namespace NesEmulator.Core.OpCodes
             memory.WriteByte(address, byteVal);
             cpu.SetRegister(RegisterNames.A, (byte)(cpu.A & byteVal));
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.ZeroPage, 0x67, 2, 5, true)]
@@ -273,6 +300,8 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.IndirectIndexed, 0x73, 2, 8, true)]
     internal sealed class RRA : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
@@ -283,6 +312,27 @@ namespace NesEmulator.Core.OpCodes
             memory.WriteByte(address, byteVal);
             cpu.AddToRegisterA(byteVal);
         }
+
+        #endregion Protected Methods
+    }
+
+    [OpCodeDefinition(AddressingMode.ZeroPage, 0x87, 2, 3, true)]
+    [OpCodeDefinition(AddressingMode.ZeroPageY, 0x97, 2, 4, true)]
+    [OpCodeDefinition(AddressingMode.IndexedIndirect, 0x83, 2, 6, true)]
+    [OpCodeDefinition(AddressingMode.Absolute, 0x8f, 3, 4, true)]
+    internal sealed class SAX : OpCode
+    {
+        #region Protected Methods
+
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        {
+            var result = (byte)(cpu.A & cpu.X);
+            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
+            memory.WriteByte(address, result);
+            cpu.UpdateZeroAndNegativeFlags(result);
+        }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.ZeroPage, 0x7, 2, 5, true)]
@@ -294,6 +344,8 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.IndirectIndexed, 0x13, 2, 8, true)]
     internal sealed class SLO : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
@@ -303,6 +355,8 @@ namespace NesEmulator.Core.OpCodes
             memory.WriteByte(address, byteVal);
             cpu.SetRegister(RegisterNames.A, (byte)(cpu.A | byteVal));
         }
+
+        #endregion Protected Methods
     }
 
     [OpCodeDefinition(AddressingMode.ZeroPage, 0x47, 2, 5, true)]
@@ -314,6 +368,8 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.IndirectIndexed, 0x53, 2, 8, true)]
     internal sealed class SRE : OpCode
     {
+        #region Protected Methods
+
         protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
         {
             var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
@@ -323,5 +379,83 @@ namespace NesEmulator.Core.OpCodes
             memory.WriteByte(address, byteVal);
             cpu.SetRegister(RegisterNames.A, (byte)(cpu.A ^ byteVal));
         }
+
+        #endregion Protected Methods
+    }
+
+    [OpCodeDefinition(AddressingMode.AbsoluteY, 0x9e, 3, 5, true)]
+    internal sealed class SXA : OpCode
+    {
+        #region Protected Methods
+
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        {
+            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
+            var byteVal = (byte)(cpu.X & (((address & 0xf0) >> 4) + 1));
+            memory.WriteByte(address, byteVal);
+        }
+
+        #endregion Protected Methods
+    }
+
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0x9c, 3, 5, true)]
+    internal sealed class SYA : OpCode
+    {
+        #region Protected Methods
+
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        {
+            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
+            var byteVal = (byte)(cpu.Y & (((address & 0xf0) >> 4) + 1));
+            memory.WriteByte(address, byteVal);
+        }
+
+        #endregion Protected Methods
+    }
+
+    [OpCodeDefinition(AddressingMode.Absolute, 0x0c, 3, 4, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0x1c, 3, 4, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0x3c, 3, 4, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0x5c, 3, 4, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0x7c, 3, 4, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0xdc, 3, 4, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0xfc, 3, 4, true)]
+    internal sealed class TOP : OpCode
+    {
+        #region Protected Methods
+
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        { }
+
+        #endregion Protected Methods
+    }
+
+    [OpCodeDefinition(AddressingMode.Immediate, 0x8b, 2, 2, true)]
+    internal sealed class XAA : OpCode
+    {
+        #region Protected Methods
+
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        {
+            // Exact operation unknown.
+        }
+
+        #endregion Protected Methods
+    }
+
+    [OpCodeDefinition(AddressingMode.AbsoluteY, 0x9b, 3, 5, true)]
+    internal sealed class XAS : OpCode
+    {
+        #region Protected Methods
+
+        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        {
+            cpu.SP = (byte)(cpu.X & cpu.A);
+            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
+            var byteVal = (byte)(cpu.SP & (((address & 0xf0) >> 4) + 1));
+            memory.WriteByte(address, byteVal);
+        }
+
+        #endregion Protected Methods
     }
 }

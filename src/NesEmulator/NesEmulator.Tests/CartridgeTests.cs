@@ -12,7 +12,9 @@ namespace NesEmulator.Tests
         [Test]
         public void LoadFileTest()
         {
-            var cartridge = new Cartridge("bm.nes");
+            var cartridge = new Cartridge("c1j30.nes");
+            var emulator = new Emulator();
+            var program = emulator.Cpu.Disassemble(cartridge.PrgRom);
             Assert.IsTrue(true);
         }
 

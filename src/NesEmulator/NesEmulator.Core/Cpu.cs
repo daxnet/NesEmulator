@@ -1,4 +1,5 @@
 ﻿using NesEmulator.Core.OpCodes;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -101,21 +102,29 @@ namespace NesEmulator.Core
         {
             var sb = new StringBuilder();
             var indexer = 0;
+            var offset = 0x8000;
             while (indexer < program.Length)
             {
                 var opcode = program[indexer];
                 indexer++;
+                var opCodeImpl = _opCodes[opcode];
                 var opCodeDefinition = _opCodeDefinitions[opcode];
                 var operandLength = opCodeDefinition.Bytes - 1;
-                var opCodeImpl = _opCodes[opcode];
                 var operand = new byte[operandLength];
-                Array.Copy(program, indexer, operand, 0, operandLength);
                 if (opCodeImpl != null)
                 {
-                    sb.AppendLine(opCodeImpl.Disassemble(opcode, operand, this));
+                    if (indexer + operandLength >= program.Length)
+                    {
+                        sb.AppendLine($"${offset,-6:X} {opCodeImpl.GetByteCode(opcode, operand),-8} .byte ${opcode:X}");
+                        break;
+                    }
+
+                    Array.Copy(program, indexer, operand, 0, operandLength);
+                    sb.AppendLine($"${offset,-6:X} {opCodeImpl.GetByteCode(opcode, operand),-8} {opCodeImpl.Disassemble(opcode, operand, this)}");
                 }
 
                 indexer += operandLength;
+                offset += operandLength + 1;
             }
 
             return sb.ToString();

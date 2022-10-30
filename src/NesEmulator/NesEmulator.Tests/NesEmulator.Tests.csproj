@@ -24,6 +24,9 @@
     <None Update="bm.nes">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="c1j30.nes">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="invalid.nes">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

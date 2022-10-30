@@ -19,6 +19,23 @@ namespace NesEmulator.Core.OpCodes
 
         protected virtual void IncreaseProgramCounter(Cpu cpu, OpCodeDefinitionAttribute opCodeDefinition) => cpu.PC += (ushort)(opCodeDefinition.Bytes - 1);
 
+        /// <summary>
+        /// Retrieves the byte code representation of the current running instruction.
+        /// </summary>
+        /// <param name="opcode">The hex value of the opcode.</param>
+        /// <param name="operand">The operand of the instruction.</param>
+        /// <returns>A string that represents the byte code of the current instruction.</returns>
+        internal string GetByteCode(byte opcode, byte[] operand)
+        {
+            var bytes = new byte[operand.Length + 1];
+            bytes[0] = opcode;
+            if (operand.Length > 0)
+            {
+                Array.Copy(operand, 0, bytes, 1, operand.Length);
+            }
+            return $"{BitConverter.ToString(bytes).Replace("-", string.Empty)}";
+        }
+
         internal string Disassemble(byte opcode, byte[] operand, Cpu cpu)
         {
             var opCodeDefinition = cpu.GetOpCodeDefinition(opcode);

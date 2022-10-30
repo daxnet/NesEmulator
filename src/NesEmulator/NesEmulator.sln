@@ -9,7 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesEmulator.Tests", "NesEmu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{F20F24DD-44E2-483D-AE60-B37457D77165}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesEmulator.NesDasm", "..\Tools\NesEmulator.NesDasm\NesEmulator.NesDasm.csproj", "{515DE69B-5A38-4027-B7CE-832646D87DD1}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "forms-ui", "forms-ui", "{0D587E3E-E135-4BCB-A4F3-7428CA27F9C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FormsUI", "..\..\forms-ui\FormsUI\FormsUI.csproj", "{1DD9342A-4AB4-408C-8E68-696751FFA501}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FormsUI.Windows", "..\..\forms-ui\FormsUI.Windows\FormsUI.Windows.csproj", "{493270E4-F457-4A54-BB7D-D8B910EF94BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesEmulator.NesInspector", "..\Tools\NesEmulator.NesInspector\NesEmulator.NesInspector.csproj", "{9DB9418D-B4C3-4F38-9872-ED63F672F0A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,16 +31,26 @@ Global
 		{77A2CC46-D660-4C4A-A106-44EFBAA80B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77A2CC46-D660-4C4A-A106-44EFBAA80B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77A2CC46-D660-4C4A-A106-44EFBAA80B81}.Release|Any CPU.Build.0 = Release|Any CPU
-		{515DE69B-5A38-4027-B7CE-832646D87DD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{515DE69B-5A38-4027-B7CE-832646D87DD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{515DE69B-5A38-4027-B7CE-832646D87DD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{515DE69B-5A38-4027-B7CE-832646D87DD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DD9342A-4AB4-408C-8E68-696751FFA501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DD9342A-4AB4-408C-8E68-696751FFA501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DD9342A-4AB4-408C-8E68-696751FFA501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DD9342A-4AB4-408C-8E68-696751FFA501}.Release|Any CPU.Build.0 = Release|Any CPU
+		{493270E4-F457-4A54-BB7D-D8B910EF94BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{493270E4-F457-4A54-BB7D-D8B910EF94BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{493270E4-F457-4A54-BB7D-D8B910EF94BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{493270E4-F457-4A54-BB7D-D8B910EF94BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DB9418D-B4C3-4F38-9872-ED63F672F0A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DB9418D-B4C3-4F38-9872-ED63F672F0A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DB9418D-B4C3-4F38-9872-ED63F672F0A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DB9418D-B4C3-4F38-9872-ED63F672F0A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{515DE69B-5A38-4027-B7CE-832646D87DD1} = {F20F24DD-44E2-483D-AE60-B37457D77165}
+		{1DD9342A-4AB4-408C-8E68-696751FFA501} = {0D587E3E-E135-4BCB-A4F3-7428CA27F9C7}
+		{493270E4-F457-4A54-BB7D-D8B910EF94BB} = {0D587E3E-E135-4BCB-A4F3-7428CA27F9C7}
+		{9DB9418D-B4C3-4F38-9872-ED63F672F0A6} = {F20F24DD-44E2-483D-AE60-B37457D77165}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B470692D-50FE-44A4-BDAC-567DAE2CDBE0}
