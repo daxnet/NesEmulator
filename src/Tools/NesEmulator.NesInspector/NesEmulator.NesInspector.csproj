@@ -7,13 +7,23 @@
 		<UseWindowsForms>true</UseWindowsForms>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<!--<UseWPF>true</UseWPF>-->
+		<UseWPF>true</UseWPF>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="6502.xshd" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="6502.xshd" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="AvalonEdit" Version="6.1.3.50" />
 		<PackageReference Include="DockPanelSuite.ThemeVS2015" Version="3.1.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="System.Xml.ReaderWriter" Version="4.3.1" />
+		<PackageReference Include="WPFHexaEditor" Version="2.1.7" />
 	</ItemGroup>
 
 	<ItemGroup>

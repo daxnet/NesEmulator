@@ -22,10 +22,14 @@ namespace FormsUI
         /// </returns>
         public static bool HasWritePermission(string directoryName)
         {
+#if !NET6_0
             var permissionSet = new PermissionSet(PermissionState.None);
             var writePermission = new FileIOPermission(FileIOPermissionAccess.Write, directoryName);
             permissionSet.AddPermission(writePermission);
             return permissionSet.IsSubsetOf(AppDomain.CurrentDomain.PermissionSet);
+#else
+            return true;
+#endif
         }
     }
 }

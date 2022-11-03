@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DockState = WeifenLuo.WinFormsUI.Docking.DockState;
 
 namespace NesEmulator.NesInspector
 {
@@ -24,8 +25,7 @@ namespace NesEmulator.NesInspector
             : base(appWindow)
         {
             InitializeComponent();
-            _windowTools = new WindowTools(
-                new ToolStripMerge(toolStrip1, true));
+            _windowTools = new WindowTools(new ToolStripMerge(childToolStrip, true));
         }
 
         protected override WindowTools WindowTools => _windowTools;
@@ -33,7 +33,8 @@ namespace NesEmulator.NesInspector
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            
+            tbtnDasm.Enabled = false;
+            tbtnBinaryViewer.Enabled = false;
         }
 
         protected override void OnWorkspaceCreated(object sender, WorkspaceCreatedEventArgs e)
@@ -47,6 +48,34 @@ namespace NesEmulator.NesInspector
                 _rootNode.Nodes.Add($"PRG ROM size: {_model.Cartridge.PrgRomSize}");
                 _rootNode.Nodes.Add($"CHR ROM size: {_model.Cartridge.ChrRomSize}");
                 _rootNode.Nodes.Add($"PRG RAM size: {_model.Cartridge.PrgRamSize}");
+            }
+            tbtnDasm.Enabled = true;
+            tbtnBinaryViewer.Enabled = true;
+        }
+
+        private void Action_OpenDisassembler(object sender, EventArgs e)
+        {
+            CreateOrOpenWindow<FrmDisassembler>();
+        }
+
+        private void Action_OpenBinaryViewer(object sender, EventArgs e)
+        {
+            CreateOrOpenWindow<FrmBinaryViewer>();
+        }
+
+        private void CreateOrOpenWindow<T>()
+            where T : DockableWindow
+        {
+            var window = AppWindow.WindowManager.GetFirstWindow<T>();
+            if (window != null)
+            {
+                window.Show();
+            }
+            else
+            {
+                window = AppWindow.WindowManager.CreateWindow<T>(_model);
+                window.ShowIcon = true;
+                window.Show(AppWindow.DockArea, DockState.Document);
             }
         }
     }

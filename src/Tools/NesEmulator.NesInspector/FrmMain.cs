@@ -38,12 +38,14 @@ namespace NesEmulator.NesInspector
             base.OnLoad(e);
             RegisterTools();
             RegisterToolWindows();
-
         }
 
         protected override void OnWorkspaceCreated(object sender, WorkspaceCreatedEventArgs e)
         {
             WindowManager.GetFirstWindow<FrmNesExplorer>()?.Show();
+            var binaryViewerWindow = WindowManager.GetFirstWindow<FrmBinaryViewer>();
+            binaryViewerWindow ??= WindowManager.CreateWindow<FrmBinaryViewer>(e.Model as InspectorModel);
+            binaryViewerWindow.Show(DockArea, DockState.Document);
         }
 
         protected override void OnWorkspaceOpened(object sender, WorkspaceOpenedEventArgs e)

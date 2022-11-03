@@ -9,23 +9,23 @@ namespace NesEmulator.Tests
 {
     public class DisassembleTests
     {
-        private const string PRG1 = @"LDA #$05
-SBC #$09
+        private const string PRG1 = @"$8000   A905     LDA #$05
+$8002   E909     SBC #$09
 ";
-        private const string PRG2 = @"LDA #$01
-STA $F0
-LDA #$CC
-STA $F1
-JMP ($00F0)
+        private const string PRG2 = @"$8000   A901     LDA #$01
+$8002   85F0     STA $F0
+$8004   A9CC     LDA #$CC
+$8006   85F1     STA $F1
+$8008   6CF000   JMP ($00F0)
 ";
-        private const string PRG3 = @"LDX #$01
-LDA #$05
-STA $01
-LDA #$07
-STA $02
-LDY #$0A
-STY $0705
-LDA ($0000,X)
+        private const string PRG3 = @"$8000   A201     LDX #$01
+$8002   A905     LDA #$05
+$8004   8501     STA $01
+$8006   A907     LDA #$07
+$8008   8502     STA $02
+$800A   A00A     LDY #$0A
+$800C   8C0507   STY $0705
+$800F   A100     LDA ($0000,X)
 ";
 
         private readonly Emulator emulator = new();

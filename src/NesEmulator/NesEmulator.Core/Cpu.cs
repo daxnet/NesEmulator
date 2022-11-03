@@ -113,7 +113,7 @@ namespace NesEmulator.Core
                 var operand = new byte[operandLength];
                 if (opCodeImpl != null)
                 {
-                    if (indexer + operandLength >= program.Length)
+                    if (indexer + operandLength > program.Length)
                     {
                         sb.AppendLine($"${offset,-6:X} {opCodeImpl.GetByteCode(opcode, operand),-8} .byte ${opcode:X}");
                         break;
