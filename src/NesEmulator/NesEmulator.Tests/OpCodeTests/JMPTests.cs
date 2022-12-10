@@ -22,9 +22,9 @@ namespace NesEmulator.Tests.OpCodeTests
         [Test]
         public void IndirectAddressingTest()
         {
-            TestUtils.SetMemoryByte(emulator.Memory, 0x2d3f, 0x12);
-            TestUtils.SetMemoryByte(emulator.Memory, 0x2d40, 0x34);
-            var program = new byte[] { 0x6c, 0x3f, 0x2d };
+            TestUtils.SetMemoryByte(emulator.Memory, 0x013f, 0x12);
+            TestUtils.SetMemoryByte(emulator.Memory, 0x0140, 0x34);
+            var program = new byte[] { 0x6c, 0x3f, 0x01 };
             emulator.Cpu.LoadAndRun(program);
             Assert.That(emulator.Cpu.PC, Is.EqualTo(0x3412));
         }
@@ -32,10 +32,10 @@ namespace NesEmulator.Tests.OpCodeTests
         [Test]
         public void IndirectAddressingCrosspageTest()
         {
-            TestUtils.SetMemoryByte(emulator.Memory, 0x2d00, 0x11);
-            TestUtils.SetMemoryByte(emulator.Memory, 0x2dff, 0x12);
-            TestUtils.SetMemoryByte(emulator.Memory, 0x2e00, 0x34);
-            var program = new byte[] { 0x6c, 0xff, 0x2d };
+            TestUtils.SetMemoryByte(emulator.Memory, 0x0100, 0x11);
+            TestUtils.SetMemoryByte(emulator.Memory, 0x01ff, 0x12);
+            TestUtils.SetMemoryByte(emulator.Memory, 0x0200, 0x34);
+            var program = new byte[] { 0x6c, 0xff, 0x01 };
             emulator.Cpu.LoadAndRun(program);
             Assert.That(emulator.Cpu.PC, Is.EqualTo(0x1112));
         }

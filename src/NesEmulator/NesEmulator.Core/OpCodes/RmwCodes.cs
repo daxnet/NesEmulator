@@ -13,7 +13,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.AbsoluteX, 0x1e, 3, 7)]
     internal sealed class ASL : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             byte result;
             switch (opCodeDefinition.AddressingMode)
@@ -23,7 +23,6 @@ namespace NesEmulator.Core.OpCodes
                     cpu.SetRegister(RegisterNames.A, result);
                     break;
                 default:
-                    var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
                     result = CalculateAsl(cpu, memory.ReadByte(address));
                     memory.WriteByte(address, result);
                     cpu.UpdateZeroAndNegativeFlags(result);
@@ -45,7 +44,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.AbsoluteX, 0x3e, 3, 7)]
     internal sealed class ROL : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             byte result;
             switch (opCodeDefinition.AddressingMode)
@@ -55,7 +54,6 @@ namespace NesEmulator.Core.OpCodes
                     cpu.SetRegister(RegisterNames.A, result);
                     break;
                 default:
-                    var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
                     result = CalculateRol(cpu, memory.ReadByte(address));
                     memory.WriteByte(address, result);
                     cpu.UpdateZeroAndNegativeFlags(result);
@@ -78,7 +76,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.AbsoluteX, 0x5e, 3, 7)]
     internal sealed class LSR : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             byte result;
             switch (opCodeDefinition.AddressingMode)
@@ -88,7 +86,6 @@ namespace NesEmulator.Core.OpCodes
                     cpu.SetRegister(RegisterNames.A, result);
                     break;
                 default:
-                    var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
                     result = CalculateLsr(cpu, memory.ReadByte(address));
                     memory.WriteByte(address, result);
                     cpu.UpdateZeroAndNegativeFlags(result);
@@ -110,7 +107,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.AbsoluteX, 0x7e, 3, 7)]
     internal sealed class ROR : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             byte result;
             switch (opCodeDefinition.AddressingMode)
@@ -120,7 +117,6 @@ namespace NesEmulator.Core.OpCodes
                     cpu.SetRegister(RegisterNames.A, result);
                     break;
                 default:
-                    var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
                     result = CalculateRor(cpu, memory.ReadByte(address));
                     memory.WriteByte(address, result);
                     cpu.UpdateZeroAndNegativeFlags(result);
@@ -141,9 +137,8 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.Absolute, 0x8e, 3, 4)]
     internal sealed class STX : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             memory.WriteByte(address, cpu.X);
         }
     }
@@ -151,7 +146,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.Implicit, 0x8a, 1, 2)]
     internal sealed class TXA : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.SetRegister(RegisterNames.A, cpu.X);
         }
@@ -160,7 +155,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.Implicit, 0x9a, 1, 2)]
     internal sealed class TXS : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.SP = cpu.X;
         }
@@ -170,12 +165,11 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.ZeroPage, 0xa6, 2, 3)]
     [OpCodeDefinition(AddressingMode.ZeroPageY, 0xb6, 2, 4)]
     [OpCodeDefinition(AddressingMode.Absolute, 0xae, 3, 4)]
-    [OpCodeDefinition(AddressingMode.AbsoluteY, 0xbe, 3, 4)]
+    [OpCodeDefinition(AddressingMode.AbsoluteY, 0xbe, 3, 4, true)]
     internal sealed class LDX : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             var byteVal = memory.ReadByte(address);
             cpu.SetRegister(RegisterNames.X, byteVal);
         }
@@ -184,7 +178,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.Implicit, 0xaa, 1, 2)]
     internal sealed class TAX : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.SetRegister(RegisterNames.X, cpu.A);
         }
@@ -193,7 +187,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.Implicit, 0xba, 1, 2)]
     internal sealed class TSX : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.SetRegister(RegisterNames.X, cpu.SP);
         }
@@ -205,9 +199,8 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.AbsoluteX, 0xde, 3, 7)]
     internal sealed class DEC : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             var m = memory.ReadByte(address);
             m--;
             memory.WriteByte(address, m);
@@ -218,7 +211,7 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.Implicit, 0xca, 1, 2)]
     internal sealed class DEX : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
             => cpu.SetRegister(RegisterNames.X, (byte)(cpu.X - 1));
     }
 
@@ -228,9 +221,8 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.AbsoluteX, 0xfe, 3, 7)]
     internal sealed class INC : OpCode
     {
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             var b = memory.ReadByte(address);
             b++;
             memory.WriteByte(address, b);

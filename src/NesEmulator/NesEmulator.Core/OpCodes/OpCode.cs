@@ -1,23 +1,145 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// ============================================================================
+//       __ __   __
+//  |\ ||_ (_   |_  _    | _ |_ _  _
+//  | \||____)  |__||||_||(_||_(_)|
+//
+// Written by Sunny Chen (daxnet), 2022
+// MIT License
+// ============================================================================
+
+using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NesEmulator.Core.OpCodes
 {
     public abstract class OpCode
     {
-        public void Execute(byte opcode, Cpu cpu, Memory memory)
+
+        #region Public Methods
+
+        public string Disassemble(byte[] operand, OpCodeDefinitionAttribute opCodeDefinition)
+        {
+            var sb = new StringBuilder();
+            sb.Append(ToString());
+            if (opCodeDefinition.AddressingMode != AddressingMode.Implicit)
+            {
+                sb.Append(' ');
+                int op = 0;
+                if (operand.Length > 0)
+                {
+                    op = operand.Length == 1 ? operand[0] : (operand[1] << 8 | operand[0]);
+                }
+                switch (opCodeDefinition.AddressingMode)
+                {
+                    case AddressingMode.Accumulator:
+                        sb.Append('A');
+                        break;
+
+                    case AddressingMode.Immediate:
+                        sb.Append($"#${op:X2}");
+                        break;
+
+                    case AddressingMode.Relative:
+                    case AddressingMode.ZeroPage:
+                        sb.Append($"${op:X2}");
+                        break;
+
+                    case AddressingMode.ZeroPageX:
+                        sb.Append($"${op:X2},X");
+                        break;
+
+                    case AddressingMode.ZeroPageY:
+                        sb.Append($"${op:X2},Y");
+                        break;
+
+                    case AddressingMode.Absolute:
+                        sb.Append($"${op:X4}");
+                        break;
+
+                    case AddressingMode.AbsoluteX:
+                        sb.Append($"${op:X4},X");
+                        break;
+
+                    case AddressingMode.AbsoluteY:
+                        sb.Append($"${op:X4},Y");
+                        break;
+
+                    case AddressingMode.Indirect:
+                        sb.Append($"(${op:X4})");
+                        break;
+
+                    case AddressingMode.IndexedIndirect:
+                        if ((op & 0xff) == op)
+                        {
+                            sb.Append($"(${op:X2},X)");
+                        }
+                        else
+                        {
+                            sb.Append($"(${op:X4},X)");
+                        }
+                        break;
+
+                    case AddressingMode.IndirectIndexed:
+                        if ((op & 0xff) == op)
+                        {
+                            sb.Append($"(${op:X2}),Y");
+                        }
+                        else
+                        {
+                            sb.Append($"(${op:X4}),Y");
+                        }
+                        break;
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public void Execute(byte opcode, Cpu cpu, Memory memory, Action<OpCodeExecutionEventArgs>? executingCallback = null, Action<OpCodeExecutionEventArgs>? executedCallback = null)
         {
             var opCodeDefinition = cpu.GetOpCodeDefinition(opcode);
-            DoExecute(cpu, memory, opCodeDefinition);
+            var pageCrossed = false;
+            var parameterBytes = new byte[opCodeDefinition.Bytes - 1];
+            for (var idx = 0; idx < opCodeDefinition.Bytes - 1; idx++)
+            {
+                parameterBytes[idx] = memory.ReadByte((ushort)(cpu.PC + idx));
+            }
+
+            // Get operand address, in the meanwhile, get whether the page was crossed.
+            var operandAddress =
+                opCodeDefinition.AddressingMode == AddressingMode.Implicit ||
+                opCodeDefinition.AddressingMode == AddressingMode.Accumulator ||
+                opCodeDefinition.AddressingMode == AddressingMode.Relative
+                ?
+                ushort.MinValue
+                :
+                cpu.GetCurrentOperandAddress(opCodeDefinition.AddressingMode, out pageCrossed);
+
+            executingCallback?.Invoke(new OpCodeExecutionEventArgs(cpu, memory, operandAddress, opCodeDefinition, this, parameterBytes));
+
+            // Execute the instruction with the specified operand address.
+            DoExecute(cpu, memory, operandAddress, opCodeDefinition);
+
+            executedCallback?.Invoke(new OpCodeExecutionEventArgs(cpu, memory, operandAddress, opCodeDefinition, this, parameterBytes));
+
+            // Adds cycles to CPU.
+            cpu.Cycle += opCodeDefinition.Cycles;
+
+            // If page cross check is on and page crossed, add additional cycle.
+            if (opCodeDefinition.PageCrossCheck && pageCrossed)
+            {
+                cpu.Cycle++;
+            }
+
+            // Increases program counter.
             IncreaseProgramCounter(cpu, opCodeDefinition);
         }
 
-        protected abstract void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition);
+        public override string ToString() => this.GetType().Name;
 
-        protected virtual void IncreaseProgramCounter(Cpu cpu, OpCodeDefinitionAttribute opCodeDefinition) => cpu.PC += (ushort)(opCodeDefinition.Bytes - 1);
+        #endregion Public Methods
+
+        #region Internal Methods
 
         /// <summary>
         /// Retrieves the byte code representation of the current running instruction.
@@ -25,7 +147,7 @@ namespace NesEmulator.Core.OpCodes
         /// <param name="opcode">The hex value of the opcode.</param>
         /// <param name="operand">The operand of the instruction.</param>
         /// <returns>A string that represents the byte code of the current instruction.</returns>
-        internal string GetByteCode(byte opcode, byte[] operand)
+        internal static string GetByteCode(byte opcode, byte[] operand)
         {
             var bytes = new byte[operand.Length + 1];
             bytes[0] = opcode;
@@ -36,55 +158,15 @@ namespace NesEmulator.Core.OpCodes
             return $"{BitConverter.ToString(bytes).Replace("-", string.Empty)}";
         }
 
-        internal string Disassemble(byte opcode, byte[] operand, Cpu cpu)
-        {
-            var opCodeDefinition = cpu.GetOpCodeDefinition(opcode);
-            var sb = new StringBuilder();
-            sb.Append(ToString());
-            if (opCodeDefinition.AddressingMode != AddressingMode.Implicit &&
-                opCodeDefinition.AddressingMode != AddressingMode.Accumulator)
-            {
-                sb.Append(' ');
-                var op = operand.Length == 1 ? operand[0] : (operand[1] << 8 | operand[0]);
-                switch (opCodeDefinition.AddressingMode)
-                {
-                    case AddressingMode.Immediate:
-                        sb.Append($"#${op:X2}");
-                        break;
-                    case AddressingMode.Relative:
-                    case AddressingMode.ZeroPage:
-                        sb.Append($"${op:X2}");
-                        break;
-                    case AddressingMode.ZeroPageX:
-                        sb.Append($"${op:X2},X");
-                        break;
-                    case AddressingMode.ZeroPageY:
-                        sb.Append($"${op:X2},Y");
-                        break;
-                    case AddressingMode.Absolute:
-                        sb.Append($"${op:X4}");
-                        break;
-                    case AddressingMode.AbsoluteX:
-                        sb.Append($"${op:X4},X");
-                        break;
-                    case AddressingMode.AbsoluteY:
-                        sb.Append($"${op:X4},Y");
-                        break;
-                    case AddressingMode.Indirect:
-                        sb.Append($"(${op:X4})");
-                        break;
-                    case AddressingMode.IndexedIndirect:
-                        sb.Append($"(${op:X4},X)");
-                        break;
-                    case AddressingMode.IndirectIndexed:
-                        sb.Append($"(${op:X4}),Y");
-                        break;
-                }
-            }
+        #endregion Internal Methods
 
-            return sb.ToString();
-        }
+        #region Protected Methods
 
-        public override string ToString() => this.GetType().Name;
+        protected abstract void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition);
+
+        protected virtual void IncreaseProgramCounter(Cpu cpu, OpCodeDefinitionAttribute opCodeDefinition) => cpu.PC += (ushort)(opCodeDefinition.Bytes - 1);
+
+        #endregion Protected Methods
+
     }
 }

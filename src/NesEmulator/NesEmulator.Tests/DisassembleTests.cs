@@ -25,7 +25,7 @@ $8006   A907     LDA #$07
 $8008   8502     STA $02
 $800A   A00A     LDY #$0A
 $800C   8C0507   STY $0705
-$800F   A100     LDA ($0000,X)
+$800F   A100     LDA ($00,X)
 ";
 
         private readonly Emulator emulator = new();

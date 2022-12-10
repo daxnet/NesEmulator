@@ -48,12 +48,7 @@ namespace NesEmulator.Tests.OpCodeTests
                 e.Cpu.X = 0b1010_0100;
             });
             var b = TestUtils.GetMemoryByte(emulator.Memory, 0x10);
-            Assert.Multiple(() =>
-            {
-                Assert.That(b, Is.EqualTo(0b1010_0100));
-                Assert.That(emulator.Cpu.StatusFlags.N, Is.EqualTo(Bit.BitSet));
-                Assert.That(emulator.Cpu.StatusFlags.Z, Is.EqualTo(Bit.BitClear));
-            });
+            Assert.That(b, Is.EqualTo(0b1010_0100));
         }
 
         [Test]
@@ -66,12 +61,7 @@ namespace NesEmulator.Tests.OpCodeTests
                 e.Cpu.X = 0b0000_0100;
             });
             var b = TestUtils.GetMemoryByte(emulator.Memory, 0x10);
-            Assert.Multiple(() =>
-            {
-                Assert.That(b, Is.EqualTo(0));
-                Assert.That(emulator.Cpu.StatusFlags.N, Is.EqualTo(Bit.BitClear));
-                Assert.That(emulator.Cpu.StatusFlags.Z, Is.EqualTo(Bit.BitSet));
-            });
+            Assert.That(b, Is.EqualTo(0));
         }
 
         [Test]

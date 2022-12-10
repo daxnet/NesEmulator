@@ -12,15 +12,18 @@ namespace NesEmulator.Core
 
         public const ushort StackPageOffset = 0x100;
         public const byte StackResetValue = 0xfd;
-        public const byte StatusFlagResetValue = 0x34; // 0b0011_0100
+        public const byte StatusFlagResetValue = 0x24;
 
         #endregion Public Fields
+
+        // 0b0010_0100
 
         #region Private Fields
 
         private readonly OpCodeDefinitionAttribute[] _opCodeDefinitions = new OpCodeDefinitionAttribute[0x100];
         private readonly OpCode?[] _opCodes = new OpCode?[0x100];
         private byte _a;
+        private int _cycle = 0;
         private ushort _pc;
         private byte _sp;
         private StatusFlags _statusFlags;
@@ -31,25 +34,10 @@ namespace NesEmulator.Core
 
         #region Public Constructors
 
-        public Cpu(Emulator emulator) : base(emulator)
+        public Cpu(Emulator emulator, OpCodeDefinitionAttribute[] opCodeDefinitions, OpCode?[] opCodes) : base(emulator)
         {
-            var opCodeList = from p in GetType().Assembly.GetTypes()
-                             let opCodeDefAttrs = p.GetCustomAttributes<OpCodeDefinitionAttribute>()
-                             where opCodeDefAttrs != null && opCodeDefAttrs.Any()
-                             select new { OpCodeImplType = p, OpCodeDefs = opCodeDefAttrs };
-            foreach(var item in opCodeList)
-            {
-                foreach (var opCodeDef in item.OpCodeDefs)
-                {
-                    if (_opCodes[opCodeDef.OpCode] != null)
-                    {
-                        throw new Exception("The OpCode has already been loaded.");
-                    }
-                    _opCodeDefinitions[opCodeDef.OpCode] = opCodeDef;
-                    _opCodes[opCodeDef.OpCode] = (OpCode?)Activator.CreateInstance(item.OpCodeImplType);
-                }
-            }
-
+            _opCodeDefinitions = opCodeDefinitions;
+            _opCodes = opCodes;
             Reset();
         }
 
@@ -62,6 +50,10 @@ namespace NesEmulator.Core
             get => _a; set => _a = value;
         }
 
+        public int Cycle
+        {
+            get => _cycle; set => _cycle = value;
+        }
         public ushort PC
         {
             get => _pc; set => _pc = value;
@@ -90,14 +82,6 @@ namespace NesEmulator.Core
 
         #region Public Methods
 
-        public void LoadAndRun(byte[] program, Action<Emulator>? stateSetter = null)
-        {
-            Load(program);
-            Reset();
-            stateSetter?.Invoke(Emulator);
-            Run();
-        }
-
         public string Disassemble(byte[] program)
         {
             var sb = new StringBuilder();
@@ -115,12 +99,12 @@ namespace NesEmulator.Core
                 {
                     if (indexer + operandLength > program.Length)
                     {
-                        sb.AppendLine($"${offset,-6:X} {opCodeImpl.GetByteCode(opcode, operand),-8} .byte ${opcode:X}");
+                        sb.AppendLine($"${offset,-6:X} {OpCode.GetByteCode(opcode, operand),-8} .byte ${opcode:X}");
                         break;
                     }
 
                     Array.Copy(program, indexer, operand, 0, operandLength);
-                    sb.AppendLine($"${offset,-6:X} {opCodeImpl.GetByteCode(opcode, operand),-8} {opCodeImpl.Disassemble(opcode, operand, this)}");
+                    sb.AppendLine($"${offset,-6:X} {OpCode.GetByteCode(opcode, operand),-8} {opCodeImpl.Disassemble(operand, opCodeDefinition)}");
                 }
 
                 indexer += operandLength;
@@ -130,6 +114,13 @@ namespace NesEmulator.Core
             return sb.ToString();
         }
 
+        public void LoadAndRun(byte[] program, Action<Emulator>? stateSetter = null, ushort address = 0x8000)
+        {
+            Load(program, address);
+            Reset();
+            stateSetter?.Invoke(Emulator);
+            Run();
+        }
         public void Reset()
         {
             _a = 0;
@@ -170,10 +161,20 @@ namespace NesEmulator.Core
             SetRegister(RegisterNames.A, result);
         }
 
-        internal void Branch() => _pc = (_pc + (sbyte)Emulator.Memory.ReadByte(_pc) + 1).WrapAsUShort();
+        internal void Branch()
+        {
+            // +1 if branch succeeds
+            _cycle++;
 
-        internal OpCodeDefinitionAttribute GetOpCodeDefinition(byte opcode) => _opCodeDefinitions[opcode];
+            var brancingPC = (_pc + (sbyte)Emulator.Memory.ReadByte(_pc) + 1).WrapAsUShort();
+            if (PageCrossed(_pc, brancingPC))
+            {
+                // +1 again if page crossed.
+                _cycle++;
+            }
 
+            _pc = brancingPC;
+        }
         /// <summary>
         /// Computes the operand address based on the given addressing mode.
         /// </summary>
@@ -181,52 +182,18 @@ namespace NesEmulator.Core
         /// <returns>The operand address.</returns>
         /// <exception cref="NotSupportedException">Throws when the addressing 
         /// mode is not supported</exception>
-        internal ushort GetOperandAddress(AddressingMode mode)
-        {
-            ushort GetIndexedIndirectAddress()
-            {
-                var ptr = (Emulator.Memory.ReadByte(_pc) + _x).WrapAsByte();
-                var lo = Emulator.Memory.ReadByte(ptr);
-                var hi = Emulator.Memory.ReadByte((ptr + 1).WrapAsUShort());
-                return (ushort)(hi << 8 | lo);
-            }
+        internal ushort GetCurrentOperandAddress(AddressingMode mode, out bool pageCrossed) => ResolveAddress(mode, _pc, out pageCrossed);
 
-            ushort GetIndirectIndexedAddress()
-            {
-                var baseAddress = Emulator.Memory.ReadByte(_pc);
-                var lo = Emulator.Memory.ReadByte(baseAddress);
-                var hi = Emulator.Memory.ReadByte((baseAddress + 1).WrapAsUShort());
-                var rebaseAddress = (ushort)(hi << 8 | lo);
-                return (rebaseAddress + _y).WrapAsUShort();
-            }
+        internal OpCodeDefinitionAttribute GetOpCodeDefinition(byte opcode) => _opCodeDefinitions[opcode];
 
-            ushort GetIndirectAddress()
-            {
-                var offset = Emulator.Memory.ReadWord(_pc);
-                var hiAddress = (ushort)((offset & 0xff) == 0xff ? offset - 0xff : offset + 1);
-                return (Emulator.Memory.ReadByte(hiAddress) << 8 | Emulator.Memory.ReadByte(offset)).WrapAsUShort();
-            }
 
-            return mode switch
-            {
-                AddressingMode.Immediate => _pc,
-                AddressingMode.ZeroPage => Emulator.Memory.ReadByte(_pc),
-                AddressingMode.ZeroPageX => (Emulator.Memory.ReadByte(_pc) + _x).WrapAsByte(),
-                AddressingMode.ZeroPageY => (Emulator.Memory.ReadByte(_pc) + _y).WrapAsByte(),
-                AddressingMode.Absolute => Emulator.Memory.ReadWord(_pc),
-                AddressingMode.AbsoluteX => (Emulator.Memory.ReadWord(_pc) + _x).WrapAsUShort(),
-                AddressingMode.AbsoluteY => (Emulator.Memory.ReadWord(_pc) + _y).WrapAsUShort(),
-                AddressingMode.Indirect => GetIndirectAddress(),
-                AddressingMode.IndexedIndirect => GetIndexedIndirectAddress(),
-                AddressingMode.IndirectIndexed => GetIndirectIndexedAddress(),
-                _ => throw new NotSupportedException($"{mode} is not supported.")
-            };
-        }
+        internal bool PageCrossed(ushort a, ushort b) => (a & 0xff) != (b & 0xff);
 
         internal byte PopByte()
         {
             _sp++;
-            return Emulator.Memory.ReadByte((ushort)(StackPageOffset + _sp));
+            //return Emulator.Memory.ReadByte((ushort)(StackPageOffset + _sp));
+            return Emulator.Memory.ReadByte((ushort)(0x100 | _sp));
         }
 
         internal ushort PopWord()
@@ -238,13 +205,71 @@ namespace NesEmulator.Core
 
         internal void PushByte(byte val)
         {
-            Emulator.Memory.WriteByte((ushort)(StackPageOffset + _sp), val);
+            // Emulator.Memory.WriteByte((ushort)(StackPageOffset + _sp), val);
+            Emulator.Memory.WriteByte((ushort)(0x100 | _sp), val);
             _sp--;
         }
+
         internal void PushWord(ushort val)
         {
             PushByte((byte)(val >> 8)); // hi
             PushByte((byte)(val & 0xff)); // lo
+        }
+
+        internal ushort ResolveAddress(AddressingMode mode, ushort address, out bool pageCrossed)
+        {
+            pageCrossed = false;
+            ushort result;
+            byte hi, lo;
+            switch (mode)
+            {
+                case AddressingMode.Immediate:
+                    result = address;
+                    break;
+                case AddressingMode.ZeroPage:
+                    result = Emulator.Memory.ReadByte(address);
+                    break;
+                case AddressingMode.ZeroPageX:
+                    result = (Emulator.Memory.ReadByte(address) + _x).WrapAsByte();
+                    break;
+                case AddressingMode.ZeroPageY:
+                    result = (Emulator.Memory.ReadByte(address) + _y).WrapAsByte();
+                    break;
+                case AddressingMode.Absolute:
+                    result = Emulator.Memory.ReadWord(address);
+                    break;
+                case AddressingMode.AbsoluteX:
+                    result = (Emulator.Memory.ReadWord(address) + _x).WrapAsUShort();
+                    pageCrossed = PageCrossed((ushort)(address - _x), _x);
+                    break;
+                case AddressingMode.AbsoluteY:
+                    result = (Emulator.Memory.ReadWord(address) + _y).WrapAsUShort();
+                    pageCrossed = PageCrossed((ushort)(address - _y), _y);
+                    break;
+                case AddressingMode.Indirect:
+                    var pointer = Emulator.Memory.ReadWord(address);
+                    var hiAddress = (ushort)((pointer & 0xff) == 0xff ? pointer - 0xff : pointer + 1);
+                    result = (Emulator.Memory.ReadByte(hiAddress) << 8 | Emulator.Memory.ReadByte(pointer)).WrapAsUShort();
+                    break;
+                case AddressingMode.IndexedIndirect:
+                    pointer = (Emulator.Memory.ReadByte(address) + _x).WrapAsByte();
+                    lo = Emulator.Memory.ReadByte(pointer);
+                    hi = Emulator.Memory.ReadByte((pointer + 1).WrapAsByte());
+                    result = (ushort)(hi << 8 | lo);
+                    break;
+                case AddressingMode.IndirectIndexed:
+                    var baseAddress = Emulator.Memory.ReadByte(address);
+                    lo = Emulator.Memory.ReadByte(baseAddress);
+                    hi = Emulator.Memory.ReadByte((baseAddress + 1).WrapAsByte());
+                    pointer = (ushort)(hi << 8 | lo);
+                    result = (pointer + _y).WrapAsUShort();
+                    pageCrossed = PageCrossed((ushort)(address - _y), address);
+                    break;
+                default:
+                    throw new NotSupportedException($"{mode} is not supported.");
+            }
+
+            return result;
         }
         internal void SetRegister(RegisterNames register, byte val, bool updateZandNFlags = true)
         {
@@ -269,14 +294,8 @@ namespace NesEmulator.Core
 
         internal void UpdateZeroAndNegativeFlags(byte val)
         {
-            if (val == 0)
-            {
-                StatusFlags.Z = true;
-            }
-            if ((val & 0x80) != 0)
-            {
-                StatusFlags.N = true;
-            }
+            StatusFlags.Z = val == 0;
+            StatusFlags.N = ((val >> 7) & 1) == 1;
         }
 
         #endregion Internal Methods
@@ -287,13 +306,15 @@ namespace NesEmulator.Core
         /// Loads the program to be executed.
         /// </summary>
         /// <param name="program">The byte array that holds the program to be executed.</param>
-        private void Load(byte[] program)
+        /// <param name="address">The address in the emulator memory from where the program is loaded into.</param>
+        private void Load(byte[] program, ushort address = 0x8000)
         {
             if (program == null || program.Length == 0)
                 throw new ArgumentNullException(nameof(program));
-            Emulator.Memory.CopyFrom(program, 0x8000);
-            Emulator.Memory.WriteWord(0xfffc, 0x8000);
+            Emulator.Memory.CopyFrom(program, address);
+            Emulator.Memory.WriteWord(0xfffc, address);
         }
+
         private void Run()
         {
             var inst = Emulator.Memory.ReadByte(_pc);
@@ -301,7 +322,7 @@ namespace NesEmulator.Core
             {
                 _pc++;
                 var opCodeImpl = _opCodes[inst];
-                opCodeImpl?.Execute(inst, this, Emulator.Memory);
+                opCodeImpl?.Execute(inst, this, Emulator.Memory, Emulator.OnOpCodeExecuting, Emulator.OnOpCodeExecuted);
                 inst = Emulator.Memory.ReadByte(_pc);
             }
         }

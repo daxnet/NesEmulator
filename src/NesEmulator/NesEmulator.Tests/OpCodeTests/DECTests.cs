@@ -56,8 +56,8 @@ namespace NesEmulator.Tests.OpCodeTests
         [Test]
         public void AbsoluteAddressingZeroflagTest()
         {
-            TestUtils.SetMemoryByte(emulator.Memory, 0x1234, 0x01);
-            var program = new byte[] { 0xce, 0x34, 0x12 };
+            TestUtils.SetMemoryByte(emulator.Memory, 0x0234, 0x01);
+            var program = new byte[] { 0xce, 0x34, 0x02 };
             emulator.Cpu.LoadAndRun(program);
             var b = TestUtils.GetMemoryByte(emulator.Memory, 0x1234);
             Assert.Multiple(() =>
@@ -70,8 +70,8 @@ namespace NesEmulator.Tests.OpCodeTests
         [Test]
         public void AbsoluteXAddressingZeroflagTest()
         {
-            TestUtils.SetMemoryByte(emulator.Memory, 0x1234, 0x01);
-            var program = new byte[] { 0xde, 0x32, 0x12 };
+            TestUtils.SetMemoryByte(emulator.Memory, 0x0234, 0x01);
+            var program = new byte[] { 0xde, 0x32, 0x02 };
             emulator.Cpu.LoadAndRun(program, e => e.Cpu.X = 0x02);
             var b = TestUtils.GetMemoryByte(emulator.Memory, 0x1234);
             Assert.Multiple(() =>

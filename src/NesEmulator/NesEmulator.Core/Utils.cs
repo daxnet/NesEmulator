@@ -9,9 +9,9 @@ namespace NesEmulator.Core
     public static class Utils
     {
         public static ushort WrapAsUShort(this int val)
-            => (ushort)(val % ushort.MaxValue);
+            => (ushort)(val % (ushort.MaxValue + 1));
 
         public static byte WrapAsByte(this int val)
-            => (byte)(val % byte.MaxValue);
+            => (byte)(val % (byte.MaxValue + 1));
     }
 }

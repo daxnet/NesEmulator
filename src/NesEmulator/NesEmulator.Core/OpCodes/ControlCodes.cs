@@ -15,7 +15,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             if (!cpu.StatusFlags.C)
             {
@@ -39,7 +39,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             if (cpu.StatusFlags.C)
             {
@@ -63,7 +63,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             if (cpu.StatusFlags.Z)
             {
@@ -88,16 +88,11 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             var val = memory.ReadByte(address);
             var result = (byte)(val & cpu.A);
-            if (result == 0)
-            {
-                cpu.StatusFlags.Z = true;
-            }
-
+            cpu.StatusFlags.Z = result == 0;
             cpu.StatusFlags.V = Bit.GetBit(val, 6);
             cpu.StatusFlags.N = Bit.GetBit(val, 7);
         }
@@ -112,7 +107,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             if (cpu.StatusFlags.N)
             {
@@ -136,7 +131,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             if (!cpu.StatusFlags.Z)
             {
@@ -160,7 +155,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             if (!cpu.StatusFlags.N)
             {
@@ -184,10 +179,15 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.PushWord(cpu.PC);
-            cpu.PushByte(cpu.StatusFlags.Flags);
+
+            // In the byte pushed, bit 5 is always set to 1,
+            // and bit 4 is 1 if from an instruction (PHP or BRK)
+            // or 0 if from an interrupt line being pulled low (/IRQ or /NMI).
+            var flags = (byte)(cpu.StatusFlags.Flags | 0b0011_0000);
+            cpu.PushByte(flags);
             cpu.PC = memory.ReadWord(0xfffe);
             cpu.StatusFlags.I = true;
         }
@@ -202,7 +202,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             if (!cpu.StatusFlags.V)
             {
@@ -225,7 +225,7 @@ namespace NesEmulator.Core.OpCodes
     {
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             if (cpu.StatusFlags.V)
             {
@@ -247,7 +247,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
             => cpu.StatusFlags.C = false;
 
         #endregion Protected Methods
@@ -260,7 +260,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.StatusFlags.D = 0;
         }
@@ -275,7 +275,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.StatusFlags.I = 0;
         }
@@ -290,7 +290,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.StatusFlags.V = 0;
         }
@@ -307,23 +307,13 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             var val = memory.ReadByte(address);
             var result = cpu.X - val;
-            if (result >= 0)
-            {
-                cpu.StatusFlags.C = true;
-                if (result == 0)
-                {
-                    cpu.StatusFlags.Z = true;
-                }
-            }
-            else
-            {
-                cpu.StatusFlags.N = true;
-            }
+            cpu.StatusFlags.Z = result == 0;
+            cpu.StatusFlags.C = result >= 0;
+            cpu.StatusFlags.N = (result & 0x80) > 0 && result != 0;
         }
 
         #endregion Protected Methods
@@ -338,23 +328,13 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             var val = memory.ReadByte(address);
             var result = cpu.Y - val;
-            if (result >= 0)
-            {
-                cpu.StatusFlags.C = true;
-                if (result == 0)
-                {
-                    cpu.StatusFlags.Z = true;
-                }
-            }
-            else
-            {
-                cpu.StatusFlags.N = true;
-            }
+            cpu.StatusFlags.Z = result == 0;
+            cpu.StatusFlags.C = result >= 0;
+            cpu.StatusFlags.N = (result & 0x80) > 0 && result != 0;
         }
 
         #endregion Protected Methods
@@ -367,7 +347,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
             => cpu.SetRegister(RegisterNames.Y, (byte)(cpu.Y - 1));
 
         #endregion Protected Methods
@@ -380,7 +360,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
             => cpu.SetRegister(RegisterNames.X, (byte)(cpu.X + 1));
 
         #endregion Protected Methods
@@ -393,7 +373,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
             => cpu.SetRegister(RegisterNames.Y, (byte)(cpu.Y + 1));
 
         #endregion Protected Methods
@@ -407,8 +387,8 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
-            => cpu.PC = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
+            => cpu.PC = cpu.GetCurrentOperandAddress(opCodeDefinition.AddressingMode, out _);
 
         protected override void IncreaseProgramCounter(Cpu cpu, OpCodeDefinitionAttribute opCodeDefinition)
         { }
@@ -422,9 +402,8 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             cpu.PushWord((ushort)(cpu.PC + 2 - 1));
             cpu.PC = address;
         }
@@ -439,15 +418,14 @@ namespace NesEmulator.Core.OpCodes
     [OpCodeDefinition(AddressingMode.ZeroPage, 0xa4, 2, 3)]
     [OpCodeDefinition(AddressingMode.ZeroPageX, 0xb4, 2, 4)]
     [OpCodeDefinition(AddressingMode.Absolute, 0xac, 3, 4)]
-    [OpCodeDefinition(AddressingMode.AbsoluteX, 0xbc, 3, 4)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0xbc, 3, 4, true)]
     internal sealed class LDY : OpCode
     {
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             var byteVal = memory.ReadByte(address);
             cpu.SetRegister(RegisterNames.Y, byteVal);
         }
@@ -457,18 +435,39 @@ namespace NesEmulator.Core.OpCodes
     }
 
     [OpCodeDefinition(AddressingMode.Implicit, 0xea, 1, 2)]
-    [OpCodeDefinition(AddressingMode.Implicit, 0x1a, 1, 2)]
-    [OpCodeDefinition(AddressingMode.Implicit, 0x3a, 1, 2)]
-    [OpCodeDefinition(AddressingMode.Implicit, 0x5a, 1, 2)]
-    [OpCodeDefinition(AddressingMode.Implicit, 0x7a, 1, 2)]
-    [OpCodeDefinition(AddressingMode.Implicit, 0xda, 1, 2)]
-    [OpCodeDefinition(AddressingMode.Implicit, 0xfa, 1, 2)]
+    [OpCodeDefinition(AddressingMode.Implicit, 0x1a, 1, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Implicit, 0x3a, 1, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Implicit, 0x5a, 1, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Implicit, 0x7a, 1, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Implicit, 0xda, 1, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Implicit, 0xfa, 1, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.ZeroPage, 0x4, 2, 3, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.ZeroPageX, 0x14, 2, 4, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.ZeroPageX, 0x34, 2, 4, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.ZeroPage, 0x44, 2, 3, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.ZeroPageX, 0x54, 2, 4, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.ZeroPage, 0x64, 2, 3, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.ZeroPageX, 0x74, 2, 4, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Immediate, 0x80, 2, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Immediate, 0x82, 2, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Immediate, 0x89, 2, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Immediate, 0xc2, 2, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.ZeroPageX, 0xd4, 2, 4, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Immediate, 0xe2, 2, 2, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.ZeroPageX, 0xf4, 2, 4, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.Absolute, 0x0c, 3, 4, Unofficial = true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0x1c, 3, 4, true, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0x3c, 3, 4, true, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0x5c, 3, 4, true, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0x7c, 3, 4, true, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0xdc, 3, 4, true, true)]
+    [OpCodeDefinition(AddressingMode.AbsoluteX, 0xfc, 3, 4, true, true)]
     internal sealed class NOP : OpCode
     {
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             // Do nothing
         }
@@ -483,7 +482,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.PushByte(cpu.A);
         }
@@ -498,8 +497,14 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
-            => cpu.PushByte(cpu.StatusFlags.Flags);
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
+        {
+            // In the byte pushed, bit 5 is always set to 1,
+            // and bit 4 is 1 if from an instruction (PHP or BRK)
+            // or 0 if from an interrupt line being pulled low (/IRQ or /NMI).
+            var val = (byte)(cpu.StatusFlags.Flags | 0b0011_0000);
+            cpu.PushByte(val);
+        }
 
         #endregion Protected Methods
 
@@ -511,7 +516,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.SetRegister(RegisterNames.A, cpu.PopByte());
         }
@@ -526,10 +531,11 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var flags = cpu.PopByte();
-            cpu.StatusFlags.Flags = flags;
+            cpu.StatusFlags.Flags = cpu.PopByte();
+            cpu.StatusFlags.Bit4 = 0;
+            cpu.StatusFlags.Bit5 = 1;
         }
 
         #endregion Protected Methods
@@ -542,9 +548,11 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.StatusFlags.Flags = cpu.PopByte();
+            cpu.StatusFlags.Bit4 = 0;
+            cpu.StatusFlags.Bit5 = 1;
             cpu.PC = cpu.PopWord();
         }
 
@@ -558,7 +566,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.PC = (ushort)(cpu.PopWord() + 1);
         }
@@ -573,7 +581,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
             => cpu.StatusFlags.C = true;
 
         #endregion Protected Methods
@@ -586,7 +594,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
             => cpu.StatusFlags.D = 1;
 
         #endregion Protected Methods
@@ -599,7 +607,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
             => cpu.StatusFlags.I = true;
 
         #endregion Protected Methods
@@ -614,9 +622,8 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
-            var address = cpu.GetOperandAddress(opCodeDefinition.AddressingMode);
             memory.WriteByte(address, cpu.Y);
         }
 
@@ -630,7 +637,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.SetRegister(RegisterNames.Y, cpu.A);
         }
@@ -645,7 +652,7 @@ namespace NesEmulator.Core.OpCodes
 
         #region Protected Methods
 
-        protected override void DoExecute(Cpu cpu, Memory memory, OpCodeDefinitionAttribute opCodeDefinition)
+        protected override void DoExecute(Cpu cpu, Memory memory, ushort address, OpCodeDefinitionAttribute opCodeDefinition)
         {
             cpu.SetRegister(RegisterNames.A, cpu.Y);
         }
