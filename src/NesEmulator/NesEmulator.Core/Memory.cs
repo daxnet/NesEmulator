@@ -62,7 +62,8 @@ namespace NesEmulator.Core
             else if (offset >= 0x4020)
             {
                 // TODO: Implement mapper
-                return _mem[offset];
+                // return _mem[offset];
+                return Emulator.CurrentMapper.Read(offset);
             }
             else
                 throw new InvalidOperationException($"Invalid CPU memory address reading at {offset:X}");
@@ -90,7 +91,8 @@ namespace NesEmulator.Core
             else if (offset >= 0x4020)
             {
                 // TODO: Implement mapper
-                _mem[offset] = value;
+                // _mem[offset] = value;
+                Emulator.CurrentMapper.Write(offset, value);
             }
             else
                 throw new InvalidOperationException($"Invalid CPU memory address writing at {offset:X}");
@@ -110,5 +112,7 @@ namespace NesEmulator.Core
             => Array.Copy(bytes, 0, _mem, destIndex, bytes.Length);
 
         public void Reset() => Array.Clear(_mem, 0, _mem.Length);
+
+        internal byte[] Mem => _mem;
     }
 }

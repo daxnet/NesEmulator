@@ -11,6 +11,8 @@ using var emulator = new Emulator(new EmulatorOptions
     LogOutputStream = Console.OpenStandardOutput()
 });
 
-
-emulator.Cpu.LoadAndRun(cartridge.PrgRom, address: 0xC000);
+emulator.Install(cartridge);
+emulator.Cpu.Reset();
+emulator.Cpu.Run();
+// emulator.Cpu.LoadAndRun(cartridge.PrgRom, address: 0xC000);
 //Console.ReadLine();

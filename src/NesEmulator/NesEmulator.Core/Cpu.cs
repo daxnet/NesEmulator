@@ -131,6 +131,18 @@ namespace NesEmulator.Core
             _pc = Emulator.Memory?.ReadWord(0xfffc) ?? 0;
         }
 
+        public void Run()
+        {
+            var inst = Emulator.Memory.ReadByte(_pc);
+            while (inst != 0)
+            {
+                _pc++;
+                var opCodeImpl = _opCodes[inst];
+                opCodeImpl?.Execute(inst, this, Emulator.Memory, Emulator.OnOpCodeExecuting, Emulator.OnOpCodeExecuted);
+                inst = Emulator.Memory.ReadByte(_pc);
+            }
+        }
+
         #endregion Public Methods
 
         #region Internal Methods
@@ -315,19 +327,6 @@ namespace NesEmulator.Core
             Emulator.Memory.WriteWord(0xfffc, address);
         }
 
-        private void Run()
-        {
-            var inst = Emulator.Memory.ReadByte(_pc);
-            while (inst != 0)
-            {
-                _pc++;
-                var opCodeImpl = _opCodes[inst];
-                opCodeImpl?.Execute(inst, this, Emulator.Memory, Emulator.OnOpCodeExecuting, Emulator.OnOpCodeExecuted);
-                inst = Emulator.Memory.ReadByte(_pc);
-            }
-        }
-
         #endregion Private Methods
-
     }
 }

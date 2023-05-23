@@ -1,4 +1,5 @@
-﻿using NesEmulator.Core.OpCodes;
+﻿using NesEmulator.Core.Mappers;
+using NesEmulator.Core.OpCodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,9 @@ namespace NesEmulator.Core
         private readonly OpCodeDefinitionAttribute[] _opCodeDefinitions = new OpCodeDefinitionAttribute[0x100];
         private readonly OpCode?[] _opCodes = new OpCode?[0x100];
         private readonly EmulatorOptions _options;
+        private readonly List<Mapper> _supportedMappers = new List<Mapper>();
+        private Mapper _currentMapper;
+        private Cartridge? _installedCartridge;
         private bool disposedValue;
 
         #endregion Private Fields
@@ -29,6 +33,7 @@ namespace NesEmulator.Core
 
         public Emulator(EmulatorOptions options)
         {
+            _currentMapper = new DMAMapper(this);
             _options = options;
             if (_options.EnableLogging && _options.LogOutputStream != null)
             {
@@ -52,6 +57,17 @@ namespace NesEmulator.Core
                 }
             }
 
+            var mapperTypes = from p in GetType().Assembly.GetTypes()
+                              where p.IsSubclassOf(typeof(Mapper)) && p.IsDefined(typeof(MapperAttribute), false)
+                              select p;
+            foreach (var mapperType in mapperTypes)
+            {
+                if (Activator.CreateInstance(mapperType, this) is Mapper mapperInstance)
+                {
+                    _supportedMappers.Add(mapperInstance);
+                }
+            }
+
             _cpu = new Cpu(this, _opCodeDefinitions, _opCodes);
             _memory = new Memory(this);
         }
@@ -70,6 +86,15 @@ namespace NesEmulator.Core
 
         public Cpu Cpu => _cpu;
 
+        /// <summary>
+        /// Gets the mapper that is currently used by the installed cartridge.
+        /// </summary>
+        public Mapper CurrentMapper => _currentMapper;
+        /// <summary>
+        /// Gets the cartridge that has been installed to the emulator.
+        /// </summary>
+        public Cartridge? InstalledCartridge => _installedCartridge;
+
         public Memory Memory => _memory;
 
         #endregion Public Properties
@@ -81,6 +106,18 @@ namespace NesEmulator.Core
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public void Install(Cartridge cartridge)
+        {
+            _installedCartridge = cartridge;
+            var mapper = _supportedMappers.FirstOrDefault(m => m.MapperId == cartridge.MapperType);
+            if (mapper == null)
+            {
+                throw new NotSupportedException($"Mapper {cartridge.MapperType} is not supported.");
+            }
+
+            _currentMapper = mapper;
         }
 
         #endregion Public Methods
